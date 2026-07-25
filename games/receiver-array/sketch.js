@@ -45,7 +45,7 @@ const TRANSLATIONS = {
     "legendReceiver": "effective listening area",
     "legendAlgae": "algae / vegetation",
     "legendRock": "solid barrier",
-    "legendNoise": "ship-noise area",
+    "legendNoise": "noisy area",
     "legendDetected": "detected route",
     "legendMissed": "missed route",
     "controlsTitle": "Controls",
