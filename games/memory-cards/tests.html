@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telemetry Game Tests</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .test-shell { width: min(900px, calc(100% - 28px)); margin: 30px auto; padding: 22px; border: 2px solid var(--ink); background: var(--paper); box-shadow: 7px 8px 0 var(--shadow); }
+    .test-summary { padding: 12px; font-family: var(--font-interface); font-weight: 800; }
+    .test-summary.passed { border-left: 4px solid var(--green); background: #edf5eb; }
+    .test-summary.failed { border-left: 4px solid var(--coral); background: #fff1ed; }
+    #testResults { display: grid; gap: 7px; padding: 0; list-style: none; }
+    #testResults li { padding: 9px 11px; border: 1px solid var(--line); background: var(--white); }
+    #testResults li.passed { border-left: 4px solid var(--green); }
+    #testResults li.failed { border-left: 4px solid var(--coral); }
+    #testResults strong { font-family: var(--font-interface); }
+    #testResults pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <main class="test-shell">
+    <h1>Telemetry tests</h1>
+    <p id="testSummary" class="test-summary">Running…</p>
+    <ol id="testResults"></ol>
+    <p><a href="index.html">Open game</a></p>
+  </main>
+  <script src="game-data.js?v=3.0.0"></script>
+  <script src="compatibility.js?v=3.0.0"></script>
+  <script src="illustrations.js?v=3.0.0"></script>
+  <script src="tests.js?v=3.0.0"></script>
+</body>
+</html>

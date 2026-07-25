@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Notes — Fish Movement Reconstruction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Patrick+Hand&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../../game-switcher.css?v=20260725-direct2" />
+</head>
+<body>
+  <nav class="telemetry-game-switcher" aria-label="Choose a game">
+    <a href="../receiver-array/index.html" aria-label="Receiver Array" title="Receiver Array">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="10" r="2.4"></circle><circle cx="16" cy="7" r="2.4"></circle><circle cx="24" cy="11" r="2.4"></circle><circle cx="11" cy="22" r="2.4"></circle><circle cx="22" cy="23" r="2.4"></circle><path d="M4 10c2-4 6-6 12-6s10 2 12 7M5 24c4 3 8 4 12 4 5 0 9-1 11-4"></path></svg>
+    </a>
+    <a href="../fish-path/index.html" aria-label="Fish Path" title="Fish Path" aria-current="page">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 25c3-9 6-15 12-15 4 0 5 3 8 3 2 0 3-2 3-5"></path><circle cx="5" cy="25" r="2.6"></circle><circle cx="17" cy="10" r="2.6"></circle><circle cx="28" cy="8" r="2.6"></circle><path d="m23 6 5 2-3 5"></path></svg>
+    </a>
+    <a href="../memory-cards/index.html" aria-label="Memory Cards" title="Memory Cards">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="8" width="15" height="19" rx="2"></rect><rect x="12" y="5" width="15" height="19" rx="2"></rect><path d="M17 12h5M17 16h5M10 15l2 2 4-5"></path></svg>
+    </a>
+  </nav>
+
+  <header class="site-header">
+    <div class="header-copy">
+      <h1 data-i18n="mainTitle">Field Notes</h1>
+      <p class="subtitle" data-i18n="subtitle">Reconstruct plausible fish routes from receiver detections and environmental constraints.</p>
+    </div>
+    <div class="header-side">
+      <div class="field-tools">
+        <div class="language-control">
+          <span class="tool-label" data-i18n="languageLabel">Language</span>
+          <div class="language-buttons" role="group" aria-label="Language" data-i18n-aria-label="languageLabel">
+            <button class="language-button" type="button" data-language="en" aria-pressed="true">EN</button>
+            <button class="language-button" type="button" data-language="de" aria-pressed="false">DE</button>
+          </div>
+        </div>
+        <button id="audioToggleButton" class="utility-button audio-toggle" type="button" aria-pressed="false">♫ Sound: off</button>
+      </div>
+      <div class="header-stamp" aria-hidden="true"><span>MBE Lab</span><strong data-i18n="stampTraining">TRAINING CAMP</strong></div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="game-sheet" aria-labelledby="movement-heading">
+      <div class="sheet-heading game-heading-with-tools">
+        <div>
+          <p class="section-number" data-i18n="movementSection">01 / ROUTE EVIDENCE</p>
+          <h2 id="movement-heading" data-i18n="movementHeading">Reconstruct the fish movement path</h2>
+        </div>
+        <label class="compact-field">
+          <span data-i18n="difficultyLabel">Difficulty</span>
+          <select id="movementDifficultySelect">
+            <option value="easy" data-i18n="difficultyEasy">Easy</option>
+            <option value="medium" data-i18n="difficultyMedium">Medium</option>
+            <option value="hard" data-i18n="difficultyHard">Hard</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="hud compact-hud" aria-label="Movement game status" data-i18n-aria-label="movementStatusLabel">
+        <div class="hud-item"><span data-i18n="hudLevel">Level</span><strong id="movementLevelDisplay">1 / 18</strong></div>
+        <div class="hud-item"><span data-i18n="hudScore">Score</span><strong id="movementScoreDisplay">0%</strong></div>
+        <div class="hud-item"><span data-i18n="hudAttempts">Attempts</span><strong id="movementAttemptsDisplay">0 / 3</strong></div>
+        <div class="hud-item"><span data-i18n="hudProgress">Drawn pings</span><strong id="movementProgressDisplay">0</strong></div>
+        <div class="hud-item hud-state"><span data-i18n="hudStatus">Status</span><strong id="movementStateDisplay" data-i18n="stateBuilding">Ready to draw</strong></div>
+      </div>
+
+      <p id="movementBrief" class="interaction-help"></p>
+
+      <div id="movementMap" class="movement-map" role="application" tabindex="0" aria-label="Fish path drawing map" data-i18n-aria-label="movementMapLabel">
+        <svg id="movementPathSvg" class="movement-path-svg" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <filter id="pathGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+          <g id="movementRadiusLayer" class="movement-radius-layer"></g>
+          <g id="movementTruePathLayer" class="movement-true-path-layer">
+            <path id="movementTruePath" class="movement-true-path" d=""></path>
+          </g>
+          <g id="movementPlayerPathLayer" class="movement-player-path-layer">
+            <path id="movementPlayerPath" class="movement-player-path" d=""></path>
+          </g>
+          <g id="movementTruePingLayer" class="movement-true-ping-layer"></g>
+          <g id="movementPlayerPingLayer" class="movement-player-ping-layer"></g>
+          <g id="movementPingAnimationLayer" class="movement-ping-animation-layer"></g>
+          <g id="movementMarkerLayer" class="movement-marker-layer"></g>
+        </svg>
+        <div id="movementFeatures" class="movement-features" aria-hidden="true"></div>
+        <div id="movementReceivers" class="movement-receivers"></div>
+
+        <div id="movementTutorial" class="movement-tutorial" hidden>
+          <div class="movement-tutorial-card" role="status" aria-live="polite">
+            <strong id="movementTutorialTitle" data-i18n="tutorialTitle">How the evidence is created</strong>
+            <p id="movementTutorialText"></p>
+            <button id="movementTutorialSkipButton" class="tutorial-skip-button" type="button" data-i18n="buttonHideTutorial">Hide example</button>
+          </div>
+        </div>
+
+        <div id="movementCelebration" class="movement-celebration" hidden role="status" aria-live="assertive">
+          <div id="movementConfetti" class="movement-confetti" aria-hidden="true"></div>
+          <div class="movement-celebration-card">
+            <svg class="celebration-fish" viewBox="0 0 220 150" aria-hidden="true">
+              <g class="celebration-fish-body">
+                <path class="celebration-tail" d="M48 74 10 42 17 80 10 112 50 84Z"></path>
+                <ellipse class="celebration-body" cx="112" cy="76" rx="70" ry="45"></ellipse>
+                <path class="celebration-fin celebration-fin-top" d="M103 37 126 5 139 43Z"></path>
+                <path class="celebration-fin celebration-fin-bottom" d="M104 113 128 143 143 106Z"></path>
+                <circle class="celebration-eye" cx="151" cy="62" r="6"></circle>
+                <circle class="celebration-eye-shine" cx="153" cy="60" r="2"></circle>
+                <path class="celebration-smile" d="M151 82 Q166 96 181 79"></path>
+                <path class="celebration-cheek" d="M137 83 Q143 88 149 83"></path>
+              </g>
+              <g class="celebration-bubbles">
+                <circle cx="190" cy="35" r="7"></circle>
+                <circle cx="207" cy="20" r="4"></circle>
+                <circle cx="198" cy="52" r="3"></circle>
+              </g>
+            </svg>
+            <strong id="movementCelebrationTitle" class="movement-celebration-title"></strong>
+            <div id="movementCelebrationStars" class="movement-celebration-stars"></div>
+            <p id="movementCelebrationScore" class="movement-celebration-score"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend movement-legend" aria-label="Movement map legend" data-i18n-aria-label="movementLegendLabel">
+        <span><i class="receiver-symbol receiver-symbol-start">S</i><span data-i18n="legendStart">start zone</span></span>
+        <span><i class="receiver-symbol receiver-symbol-end">E</i><span data-i18n="legendEnd">end zone</span></span>
+        <span><i class="legend-swatch detection-zero"></i><span data-i18n="legendZero">0 detections</span></span>
+        <span><i class="legend-swatch detection-one"></i><span data-i18n="legendOne">1 detection</span></span>
+        <span><i class="legend-swatch detection-two"></i><span data-i18n="legendTwo">2 detections</span></span>
+        <span><i class="legend-swatch detection-three-plus"></i><span data-i18n="legendThreePlus">3+ detections</span></span>
+        <span><i class="legend-line player-route-line"></i><span data-i18n="legendPlayerRoute">your reconstruction</span></span>
+        <span><i class="legend-line true-route-line"></i><span data-i18n="legendTrueRoute">true route after submission</span></span>
+      </div>
+
+      <div class="controls">
+        <button id="movementUndoButton" class="button button-secondary" type="button" data-i18n="buttonUndo">Undo section</button>
+        <button id="movementClearButton" class="button button-secondary" type="button" data-i18n="buttonClear">Clear path</button>
+        <button id="movementSubmitButton" class="button button-primary" type="button" data-i18n="buttonSubmitPath">Submit path</button>
+        <button id="movementHintButton" class="button button-secondary" type="button" data-i18n="buttonHint">Hint</button>
+        <button id="movementTutorialButton" class="button button-secondary" type="button" data-i18n="buttonTutorial">Replay tutorial</button>
+        <button id="movementRestartButton" class="button button-restart" type="button" data-i18n="buttonRestartAttempt">Restart attempt</button>
+        <button id="movementNextButton" class="button button-success" type="button" hidden data-i18n="buttonNextLevel">Next level</button>
+      </div>
+
+      <p id="movementFeedback" class="status-message feedback-panel" aria-live="polite"></p>
+      <section id="movementEvaluation" class="evaluation-panel" hidden aria-live="polite"></section>
+      <pre id="errorPanel" class="error-panel" hidden></pre>
+    </section>
+
+    <aside class="field-notes" aria-labelledby="movement-notes-heading">
+      <p class="section-number" data-i18n="movementNotesSection">02 / EVIDENCE NOTES</p>
+      <h2 id="movement-notes-heading" data-i18n="movementNotesHeading">Interpreting receiver detections</h2>
+      <div class="note-card transmitter-note"><h3 data-i18n="spacingHeading">Ping spacing is fixed</h3><p data-i18n="spacingBody">In reality tag transmissions are happening at equal time intervals along the route, not at equal space intervals.</p></div>
+      <div class="note-card receiver-note"><h3 data-i18n="countsHeading">Counts describe proximity</h3><p data-i18n="countsBody">A receiver counts each transmission that falls inside its listening radius. Overlapping receivers may hear the same ping.</p></div>
+      <div class="note-card placement-note"><h3 data-i18n="plausibleHeading">Reconstruct the whole route</h3><p data-i18n="plausibleBody">Use all receiver counts, the regular ping spacing, the start and end zones and environmental barriers together.</p></div>
+      <div class="margin-note"><strong data-i18n="obstacleHeading">Environmental constraints</strong><p data-i18n="obstacleBody">The route must remain in the water and cannot cross solid rocks, islands or other barriers.</p></div>
+    </aside>
+  </main>
+
+  <footer class="site-footer" data-i18n="footerCredit">by Pina</footer>
+  <script src="core.js?v=2.4.0"></script>
+  <script src="game-data.js?v=2.4.0"></script>
+  <script src="game.js?v=2.4.0"></script>
+</body>
+</html>

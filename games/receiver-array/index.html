@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Notes — Receiver Array</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Patrick+Hand&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../../game-switcher.css?v=20260725-direct2" />
+</head>
+<body>
+  <nav class="telemetry-game-switcher" aria-label="Choose a game">
+    <a href="../receiver-array/index.html" aria-label="Receiver Array" title="Receiver Array" aria-current="page">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="10" r="2.4"></circle><circle cx="16" cy="7" r="2.4"></circle><circle cx="24" cy="11" r="2.4"></circle><circle cx="11" cy="22" r="2.4"></circle><circle cx="22" cy="23" r="2.4"></circle><path d="M4 10c2-4 6-6 12-6s10 2 12 7M5 24c4 3 8 4 12 4 5 0 9-1 11-4"></path></svg>
+    </a>
+    <a href="../fish-path/index.html" aria-label="Fish Path" title="Fish Path">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 25c3-9 6-15 12-15 4 0 5 3 8 3 2 0 3-2 3-5"></path><circle cx="5" cy="25" r="2.6"></circle><circle cx="17" cy="10" r="2.6"></circle><circle cx="28" cy="8" r="2.6"></circle><path d="m23 6 5 2-3 5"></path></svg>
+    </a>
+    <a href="../memory-cards/index.html" aria-label="Memory Cards" title="Memory Cards">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="8" width="15" height="19" rx="2"></rect><rect x="12" y="5" width="15" height="19" rx="2"></rect><path d="M17 12h5M17 16h5M10 15l2 2 4-5"></path></svg>
+    </a>
+  </nav>
+
+  <header class="site-header">
+    <div class="header-copy">
+      <h1 data-i18n="mainTitle">Field Notes</h1>
+      <p class="subtitle" data-i18n="subtitle">Design a receiver array and test how well it records hidden fish movement.</p>
+    </div>
+    <div class="header-side">
+      <div class="field-tools">
+        <div class="language-control">
+          <span class="tool-label" data-i18n="languageLabel">Language</span>
+          <div class="language-buttons" role="group" aria-label="Language" data-i18n-aria-label="languageLabel">
+            <button class="language-button" type="button" data-language="en" aria-pressed="true">EN</button>
+            <button class="language-button" type="button" data-language="de" aria-pressed="false">DE</button>
+          </div>
+        </div>
+        <button id="audioToggleButton" class="utility-button audio-toggle" type="button" aria-pressed="false">♫ Sound: off</button>
+      </div>
+      <div class="header-stamp" aria-hidden="true"><span>MBE Lab</span><strong data-i18n="stampTraining">TRAINING MAP</strong></div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="game-sheet" aria-labelledby="game-heading">
+      <div class="sheet-heading">
+        <div><p class="section-number" data-i18n="arraySection">01 / ARRAY DESIGN</p><h2 id="game-heading" data-i18n="gameHeading">Place the receiver stations</h2></div>
+        <div class="difficulty-control" aria-labelledby="difficultyLabel">
+          <span id="difficultyLabel" class="tool-label" data-i18n="difficultyLabel">Difficulty</span>
+          <div class="difficulty-buttons" role="radiogroup" aria-label="Difficulty" data-i18n-aria-label="difficultyLabel">
+            <button class="difficulty-button" type="button" role="radio" data-difficulty="easy" aria-checked="false" data-i18n="difficultyEasy">Easy</button>
+            <button class="difficulty-button is-active" type="button" role="radio" data-difficulty="medium" aria-checked="true" data-i18n="difficultyMedium">Medium</button>
+            <button class="difficulty-button" type="button" role="radio" data-difficulty="hard" aria-checked="false" data-i18n="difficultyHard">Hard</button>
+          </div>
+        </div>
+      </div>
+      <div class="hud" aria-label="Game status" data-i18n-aria-label="gameStatusLabel">
+        <div class="hud-item"><span data-i18n="hudLevel">Level</span><strong id="levelDisplay">1 / 12</strong></div>
+        <div class="hud-item hud-difficulty"><span data-i18n="hudDifficulty">Difficulty</span><strong id="difficultyDisplay">Medium</strong></div>
+        <div class="hud-item"><span data-i18n="hudAnimals">Animals</span><strong id="animalDisplay">1 fish</strong></div>
+        <div class="hud-item"><span data-i18n="hudReceivers">Receivers left</span><strong id="receiverDisplay">7 of 7</strong></div>
+        <div class="hud-item"><span data-i18n="hudDetected">Detected</span><strong id="scoreDisplay">0.0%</strong></div>
+        <div class="hud-item"><span data-i18n="hudTarget">Target</span><strong id="targetDisplay">70%</strong></div>
+        <div class="hud-item hud-state"><span data-i18n="hudStatus">Status</span><strong id="stateDisplay">Placing receivers</strong></div>
+      </div>
+      <div class="map-frame">
+        <div id="canvasContainer" class="canvas-container" aria-label="Aquatic telemetry game area" data-i18n-aria-label="canvasAreaLabel"></div>
+        <div class="map-corner map-corner-top">N</div>
+        <div class="map-corner map-corner-bottom" data-i18n="mapScale">survey area · not to scale</div>
+      </div>
+      <div class="controls" aria-label="Game controls" data-i18n-aria-label="gameControlsLabel">
+        <button id="startButton" class="button button-primary" type="button" data-i18n="buttonStart">Start simulation</button>
+        <button id="retryButton" class="button button-primary" type="button" hidden data-i18n="buttonRetry">Retry same paths</button>
+        <button id="nextButton" class="button button-success" type="button" hidden data-i18n="buttonNext">Next level</button>
+        <button id="resetButton" class="button button-secondary" type="button" data-i18n="buttonReset">Reset level</button>
+        <button id="restartGameButton" class="button button-restart" type="button" data-i18n="buttonRestart">Restart from level 1</button>
+      </div>
+      <p id="statusMessage" class="status-message" aria-live="polite">Click in open water to place a receiver. The fish routes stay hidden until the simulation starts.</p>
+      <div class="legend" aria-label="Map legend" data-i18n-aria-label="mapLegendLabel">
+        <span><i class="legend-swatch receiver-swatch"></i><span data-i18n="legendReceiver">effective listening area</span></span>
+        <span><i class="legend-swatch algae-swatch"></i><span data-i18n="legendAlgae">algae / vegetation</span></span>
+        <span><i class="legend-swatch rock-swatch"></i><span data-i18n="legendRock">solid barrier</span></span>
+        <span><i class="legend-swatch noise-swatch"></i><span data-i18n="legendNoise">ship-noise area</span></span>
+        <span><i class="legend-line detected-line"></i><span data-i18n="legendDetected">detected route</span></span>
+        <span><i class="legend-line missed-line"></i><span data-i18n="legendMissed">missed route</span></span>
+      </div>
+      <div class="instructions-grid">
+        <article><p class="note-label" data-i18n="controlsTitle">Controls</p><p data-i18n="controlsText">Click to place. Drag to reposition. Right-click a receiver, or select it and press Delete, to remove it.</p></article>
+        <article><p class="note-label" data-i18n="footprintTitle">Read the footprint</p><p data-i18n="footprintText">The pale receiver ring bends inward through algae and ship-noise areas, and stops at solid terrain.</p></article>
+      </div>
+      <pre id="errorPanel" class="error-panel" hidden></pre>
+    </section>
+
+    <aside class="field-notes" aria-labelledby="telemetry-heading">
+      <p class="section-number" data-i18n="fieldNotesSection">02 / FIELD NOTES</p>
+      <h2 id="telemetry-heading" data-i18n="fieldNotesHeading">How acoustic telemetry works</h2>
+      <div class="note-card transmitter-note"><h3 data-i18n="transmitterHeading">Acoustic transmitter</h3><p data-i18n="transmitterBody">A small tag on an animal that emits uniquely coded underwater sound signals.</p></div>
+      <div class="note-card receiver-note"><h3 data-i18n="receiverHeading">Acoustic receiver</h3><p data-i18n="receiverBody">A stationary listening station that records a tagged animal when its signal can be heard.</p></div>
+      <div class="note-card placement-note"><h3 data-i18n="placementHeading">Why the placement matters</h3><p data-i18n="placementBody">Good spacing follows likely travel routes while avoiding large gaps.</p></div>
+      <div class="note-card noise-note"><h3 data-i18n="environmentHeading">Environmental effects</h3><p data-i18n="environmentBody">Noisy surroundings or vegetation can weaken signal range, while solid terrain can block it.</p></div>
+      <div class="margin-note"><strong data-i18n="modelHeading">Model simplification</strong><p data-i18n="modelBody">This training model uses simplified fixed effects. Real telemetry depends on many additional factors.</p></div>
+    </aside>
+  </main>
+  <footer class="site-footer" data-i18n="footerCredit">by Pina</footer>
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.3.0/lib/p5.min.js" onerror="if (this.dataset.fallback) { const panel = document.getElementById('errorPanel'); panel.hidden = false; panel.textContent = 'The drawing library could not be loaded. Check your internet connection, then reload the page.'; } else { this.dataset.fallback = 'true'; this.src = 'https://unpkg.com/p5@2.3.0/lib/p5.min.js'; }"></script>
+  <script src="sketch.js?v=1.1.0"></script>
+</body>
+</html>
