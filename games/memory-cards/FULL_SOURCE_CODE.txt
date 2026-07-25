@@ -1,0 +1,4131 @@
+FISH AND ACOUSTIC TAG LAB — COMPLETE SOURCE CODE
+Generated: 2026-07-25
+
+
+================================================================================
+FILE: index.html
+================================================================================
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Educational fish and acoustic telemetry tag matching game." />
+  <title>Field Notes — Fish and Acoustic Tag Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Patrick+Hand&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#game-main">Skip to game</a>
+
+  <header class="site-header">
+    <div class="header-copy">
+      <h1 data-i18n="mainTitle">Field Notes</h1>
+      <p class="subtitle" data-i18n="subtitle">Choose the smallest acoustic transmitter that meets each animal's research mission and welfare constraints.</p>
+    </div>
+    <div class="header-side">
+      <div class="field-tools">
+        <div class="language-control">
+          <span class="tool-label" data-i18n="languageLabel">Language</span>
+          <div class="language-buttons" role="group" aria-label="Language" data-i18n-aria-label="languageLabel">
+            <button class="language-button" type="button" data-language="en" aria-pressed="true">EN</button>
+            <button class="language-button" type="button" data-language="de" aria-pressed="false">DE</button>
+          </div>
+        </div>
+        <button id="audioToggleButton" class="utility-button" type="button" aria-pressed="false">♫ Music: off</button>
+      </div>
+      <div class="header-stamp" aria-hidden="true"><span>MBE Lab</span><strong data-i18n="stampTraining">TELEMETRY LAB</strong></div>
+    </div>
+  </header>
+
+  <audio id="backgroundMusic" src="assets/music/field-notes-lofi.mp3" loop preload="metadata" aria-hidden="true"></audio>
+
+  <main id="game-main" class="page-shell">
+    <section class="game-sheet" aria-labelledby="matching-heading">
+      <div class="sheet-heading game-heading-with-tools">
+        <div>
+          <p class="section-number" data-i18n="matchingSection">01 / TAG CHOICE</p>
+          <h2 id="matching-heading" data-i18n="matchingHeading">Match each fish with its best-fit tag</h2>
+        </div>
+        <div class="inline-selectors">
+          <label class="compact-field">
+            <span data-i18n="modeLabel">Mode</span>
+            <select id="matchingModeSelect">
+              <option value="sorting" data-i18n="sortingMode">Direct match</option>
+              <option value="memory" data-i18n="memoryMode">Memory</option>
+            </select>
+          </label>
+          <label class="compact-field">
+            <span data-i18n="difficultyLabel">Difficulty</span>
+            <select id="matchingDifficultySelect">
+              <option value="easy" data-i18n="difficultyEasy">Easy</option>
+              <option value="medium" data-i18n="difficultyMedium">Medium</option>
+              <option value="hard" data-i18n="difficultyHard">Hard</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <p class="science-disclaimer" data-i18n="scienceDisclaimer">Educational simplification only. The 2% burden threshold is a conservative teaching rule, not a universal biological safety law.</p>
+
+      <div class="top-actions" aria-label="Help and science information">
+        <button id="tutorialButton" class="text-button" type="button" data-i18n="buttonTutorial">How to play</button>
+        <button id="scienceButton" class="text-button" type="button" data-i18n="buttonScience">About the science</button>
+      </div>
+
+      <div class="hud compact-hud" aria-label="Fish and tag matching status" data-i18n-aria-label="matchingStatusLabel">
+        <div class="hud-item"><span data-i18n="hudLevel">Level</span><strong id="matchingLevelDisplay">1 / 3</strong></div>
+        <div class="hud-item"><span data-i18n="hudScore">Score</span><strong id="matchingScoreDisplay">0</strong></div>
+        <div class="hud-item"><span id="matchingAttemptsLabel" data-i18n="hudAttempts">Attempts</span><strong id="matchingAttemptsDisplay">0</strong></div>
+        <div class="hud-item"><span data-i18n="hudProgress">Progress</span><strong id="matchingProgressDisplay">0 / 4</strong></div>
+        <div class="hud-item hud-state"><span data-i18n="hudStatus">Status</span><strong id="matchingStateDisplay" data-i18n="stateReady">Ready</strong></div>
+      </div>
+
+      <section id="selectedMissionPanel" class="mission-panel" aria-live="polite" hidden></section>
+
+      <div id="sortingModePanel" class="matching-mode-panel">
+        <p class="interaction-help" data-i18n="sortingInstructions">Select or drag a fish, read its research mission, then choose the smallest tag that satisfies every constraint.</p>
+        <div class="matching-board">
+          <section aria-labelledby="fish-cards-title">
+            <h3 id="fish-cards-title" class="board-title" data-i18n="fishCardsTitle">Fish cards</h3>
+            <div id="fishCardGrid" class="fish-card-grid"></div>
+          </section>
+          <section aria-labelledby="tag-targets-title">
+            <h3 id="tag-targets-title" class="board-title" data-i18n="tagTargetsTitle">Available tag options</h3>
+            <div id="tagTargetGrid" class="tag-target-grid"></div>
+          </section>
+        </div>
+      </div>
+
+      <div id="memoryModePanel" class="matching-mode-panel" hidden>
+        <p class="interaction-help" data-i18n="memoryInstructions">Reveal two cards. A fish matches any tag card that is scientifically correct for that individual.</p>
+        <div id="memoryCardGrid" class="memory-card-grid" role="grid" aria-label="Fish and acoustic tag memory cards" data-i18n-aria-label="memoryBoardLabel"></div>
+      </div>
+
+      <div class="controls">
+        <button id="matchingRestartButton" class="button button-secondary" type="button" data-i18n="buttonRestartRound">Restart round</button>
+        <button id="matchingHintButton" class="button button-hint" type="button" data-i18n="buttonHint">Show hint</button>
+        <button id="matchingNextButton" class="button button-success" type="button" hidden data-i18n="buttonNextDifficulty">Next difficulty</button>
+      </div>
+
+      <p id="matchingFeedback" class="status-message feedback-panel" aria-live="polite"></p>
+      <section id="completionSummary" class="completion-summary" aria-live="polite" hidden></section>
+      <pre id="errorPanel" class="error-panel" hidden></pre>
+    </section>
+
+    <aside class="field-notes" aria-labelledby="matching-notes-heading">
+      <p class="section-number" data-i18n="matchingNotesSection">02 / FIELD NOTES</p>
+      <h2 id="matching-notes-heading" data-i18n="matchingNotesHeading">How the model decides</h2>
+      <div class="note-card transmitter-note"><h3 data-i18n="tagFitHeading">Mass and anatomy</h3><p data-i18n="tagFitBody">Internal tags must remain within the teaching burden threshold and anatomical limits.</p></div>
+      <div class="note-card receiver-note"><h3 data-i18n="tagTradeoffHeading">Research requirements</h3><p data-i18n="tagTradeoffBody">Battery duration, output class, sensors and attachment method can rule out a tag.</p></div>
+      <div class="note-card placement-note"><h3 data-i18n="tagEvidenceHeading">Best-fit rule</h3><p data-i18n="tagEvidenceBody">Choose the smallest and lightest available transmitter that passes all checks.</p></div>
+      <div class="margin-note"><strong data-i18n="placeholderHeading">Animal welfare</strong><p data-i18n="placeholderBody">Some individuals should not be tagged with the available equipment.</p></div>
+    </aside>
+  </main>
+
+  <footer class="site-footer" data-i18n="footerCredit">Educational telemetry game · by Pina</footer>
+
+  <dialog id="tutorialDialog" class="info-dialog" aria-labelledby="tutorial-heading">
+    <div class="dialog-sheet">
+      <div class="dialog-heading"><h2 id="tutorial-heading" data-i18n="tutorialHeading">How to play</h2><button class="dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <div class="tutorial-grid">
+        <article><span>01</span><h3 data-i18n="tutorialStep1Title">1. Read the individual</h3><p data-i18n="tutorialStep1Body">Length is context, but the matching calculation uses body mass and anatomy.</p></article>
+        <article><span>02</span><h3 data-i18n="tutorialStep2Title">2. Read the mission</h3><p data-i18n="tutorialStep2Body">A mission may require battery duration, sensors, output and attachment type.</p></article>
+        <article><span>03</span><h3 data-i18n="tutorialStep3Title">3. Test the smallest tag first</h3><p data-i18n="tutorialStep3Body">Reject tags that fail a check, then choose the smallest remaining option.</p></article>
+        <article><span>04</span><h3 data-i18n="tutorialStep4Title">4. Choose no tag when needed</h3><p data-i18n="tutorialStep4Body">Too small to tag is correct when every available transmitter fails.</p></article>
+      </div>
+      <div class="calculation-example" aria-label="Example tag burden calculation">
+        <p><strong>200 g</strong> fish · <strong>3.6 g</strong> tag</p>
+        <code>3.6 ÷ 200 × 100 = 1.8%</code>
+        <p><strong>30 g</strong> fish · <strong>0.9 g</strong> tag</p>
+        <code>0.9 ÷ 30 × 100 = 3%</code>
+      </div>
+      <button class="button button-primary" type="button" data-close-dialog data-i18n="buttonClose">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="scienceDialog" class="info-dialog science-dialog" aria-labelledby="science-heading">
+    <div class="dialog-sheet">
+      <div class="dialog-heading"><h2 id="science-heading" data-i18n="scienceHeading">About the science</h2><button class="dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <div class="science-columns">
+        <section><h3 data-i18n="scienceModelTitle">Simplified decision model</h3><p data-i18n="scienceModelBody">The game uses current transmitter specifications and a configurable teaching threshold.</p></section>
+        <section><h3 data-i18n="scienceBurdenTitle">Burden calculation</h3><p data-i18n="scienceBurdenBody">Internal tag burden = tag mass in air ÷ fish body mass × 100.</p></section>
+        <section><h3 data-i18n="scienceExternalTitle">External attachment</h3><p data-i18n="scienceExternalBody">Large sharks and rays use external-capable V16 cases in selected missions.</p></section>
+      </div>
+      <section><h3 data-i18n="scienceSourcesTitle">Primary sources</h3><div id="scienceSourceList"></div></section>
+      <section><h3 data-i18n="scienceVisualTitle">Illustration reference checklist</h3><ul id="visualChecklist" class="visual-checklist"></ul></section>
+      <section class="validation-box"><h3 data-i18n="testHeading">Development validation</h3><p id="validationStatus"></p></section>
+      <button class="button button-primary" type="button" data-close-dialog data-i18n="buttonClose">Close</button>
+    </div>
+  </dialog>
+
+  <script src="core.js?v=3.0.0"></script>
+  <script src="game-data.js?v=3.0.0"></script>
+  <script src="illustrations.js?v=3.0.0"></script>
+  <script src="compatibility.js?v=3.0.0"></script>
+  <script src="game.js?v=3.0.0"></script>
+</body>
+</html>
+
+
+================================================================================
+FILE: style.css
+================================================================================
+
+:root {
+  color-scheme: light;
+  --paper: #f4f0e6;
+  --paper-deep: #e7dfce;
+  --ink: #18313b;
+  --muted: #5f6e6e;
+  --blue: #176f87;
+  --blue-dark: #0f5064;
+  --green: #3f7b59;
+  --coral: #c85f4a;
+  --mustard: #c59a37;
+  --line: #b8b09f;
+  --white: #fffdf7;
+  --shadow: rgba(66, 61, 49, 0.14);
+  --font-display: "Amatic SC", "Arial Narrow", sans-serif;
+  --font-notes: "Patrick Hand", "Comic Sans MS", cursive;
+  --font-stamp: "Special Elite", "Courier New", monospace;
+  --font-interface: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-notes);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--ink);
+  background-color: var(--paper-deep);
+  background-image:
+    linear-gradient(rgba(74, 70, 58, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 70, 58, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+button, select, input { font: inherit; }
+button, summary, select, input { -webkit-tap-highlight-color: transparent; }
+button, select, summary { cursor: pointer; }
+a { color: var(--blue-dark); }
+[hidden] { display: none !important; }
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 8px;
+  left: -9999px;
+  padding: 9px 13px;
+  color: var(--white);
+  background: var(--blue-dark);
+}
+.skip-link:focus { left: 8px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.site-header, .page-shell, .site-footer {
+  width: min(1500px, calc(100% - 34px));
+  margin-inline: auto;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  align-items: flex-end;
+  padding: 32px 4px 20px;
+  border-bottom: 2px solid rgba(24, 49, 59, 0.58);
+}
+
+h1, h2, h3, h4, p { margin-top: 0; }
+h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 7vw, 6.6rem);
+  line-height: 0.86;
+  letter-spacing: 0.01em;
+}
+h2, h3, h4 {
+  font-family: var(--font-notes);
+  line-height: 1.08;
+  letter-spacing: 0.015em;
+}
+.subtitle {
+  max-width: 850px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: clamp(1.15rem, 1.8vw, 1.38rem);
+  line-height: 1.45;
+}
+.header-side {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 18px;
+  align-items: flex-end;
+}
+.field-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.language-control { display: flex; gap: 8px; align-items: center; }
+.tool-label, .section-number, .tag-model, .memory-type, .hud-item span, .compact-field > span {
+  font-family: var(--font-stamp);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.language-buttons {
+  display: inline-flex;
+  border: 1px solid rgba(24, 49, 59, 0.55);
+  background: rgba(255, 253, 247, 0.75);
+  box-shadow: 2px 2px 0 rgba(24, 49, 59, 0.12);
+}
+.language-button, .utility-button, .text-button {
+  min-height: 36px;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-family: var(--font-interface);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.language-button { min-width: 42px; padding: 6px 10px; border-right: 1px solid rgba(24, 49, 59, 0.25); }
+.language-button:last-child { border-right: 0; }
+.language-button:hover, .utility-button:hover, .text-button:hover { background: rgba(23, 111, 135, 0.11); }
+.language-button[aria-pressed="true"] { color: var(--white); background: var(--blue-dark); }
+.utility-button {
+  min-width: 142px;
+  padding: 7px 12px;
+  border: 1px solid rgba(24, 49, 59, 0.55);
+  background: rgba(255, 253, 247, 0.72);
+  box-shadow: 2px 2px 0 rgba(24, 49, 59, 0.12);
+}
+.utility-button[aria-pressed="true"] { color: #17432e; border-color: var(--green); background: #dbe9d9; }
+.header-stamp {
+  padding: 10px 15px 9px;
+  border: 2px solid var(--coral);
+  color: var(--coral);
+  font-family: var(--font-stamp);
+  line-height: 1.05;
+  text-align: center;
+  transform: rotate(-2.5deg);
+}
+.header-stamp span, .header-stamp strong { display: block; }
+.header-stamp span { font-size: 0.62rem; letter-spacing: 0.15em; }
+.header-stamp strong { margin-top: 5px; font-size: 0.95rem; letter-spacing: 0.04em; }
+
+.page-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
+  gap: 26px;
+  align-items: start;
+  padding-top: 26px;
+}
+.game-sheet, .field-notes {
+  background: var(--paper);
+  border: 1px solid rgba(78, 72, 57, 0.42);
+}
+.game-sheet {
+  min-width: 0;
+  padding: 22px;
+  box-shadow: 7px 8px 0 var(--shadow);
+}
+.field-notes {
+  position: sticky;
+  top: 18px;
+  padding: 23px 21px 25px;
+  box-shadow: 5px 6px 0 rgba(66, 61, 49, 0.1);
+}
+.sheet-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 14px;
+}
+.sheet-heading h2 {
+  margin: 4px 0 0;
+  font-size: clamp(2.15rem, 3.5vw, 3.1rem);
+}
+.inline-selectors {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+.compact-field { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+.compact-field select {
+  min-height: 42px;
+  padding: 7px 34px 7px 10px;
+  border: 1px solid rgba(24, 49, 59, 0.55);
+  border-radius: 0;
+  color: var(--ink);
+  background: var(--white);
+  font-family: var(--font-interface);
+  font-weight: 700;
+}
+.toggle-field {
+  display: inline-flex;
+  min-height: 42px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid rgba(24, 49, 59, 0.4);
+  background: rgba(255, 253, 247, 0.72);
+  font-family: var(--font-interface);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.toggle-field input { width: 18px; height: 18px; accent-color: var(--blue-dark); }
+
+.science-disclaimer, .interaction-help {
+  margin: 0 0 13px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--coral);
+  color: var(--muted);
+  background: rgba(255, 253, 247, 0.78);
+  font-size: 1.04rem;
+  line-height: 1.45;
+}
+.interaction-help { border-left-color: var(--mustard); }
+.top-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: -3px 0 13px; }
+.text-button {
+  min-height: 34px;
+  padding: 4px 9px;
+  border-bottom: 1px dashed var(--blue-dark);
+  color: var(--blue-dark);
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(105px, 1fr));
+  gap: 1px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.hud-item { min-width: 0; padding: 10px 11px 11px; background: rgba(255, 253, 247, 0.92); }
+.hud-item span, .hud-item strong { display: block; }
+.hud-item strong {
+  margin-top: 3px;
+  font-family: var(--font-interface);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.hud-state { border-left: 3px solid var(--mustard); }
+
+.mission-panel {
+  margin: 0 0 14px;
+  padding: 13px 15px;
+  border: 2px solid var(--blue-dark);
+  background: #e7f1f1;
+  box-shadow: 3px 3px 0 rgba(15, 80, 100, 0.13);
+}
+.mission-heading { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
+.mission-heading h3 { margin: 0; font-size: 1.55rem; }
+.mission-panel p { margin: 7px 0 0; color: #36545d; font-size: 1.05rem; }
+.mission-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.mission-chips span {
+  padding: 5px 8px;
+  border: 1px solid rgba(15, 80, 100, 0.35);
+  background: var(--white);
+  font-family: var(--font-interface);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.matching-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(330px, 0.82fr);
+  gap: 18px;
+}
+.board-title { margin: 0 0 10px; font-size: 1.75rem; }
+.fish-card-grid, .tag-target-grid, .memory-card-grid { display: grid; gap: 12px; }
+.fish-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tag-target-grid { grid-template-columns: 1fr; align-content: start; }
+
+.fish-card {
+  min-width: 0;
+  border: 2px solid var(--ink);
+  background: var(--white);
+  box-shadow: 4px 4px 0 rgba(24, 49, 59, 0.14);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.fish-card:hover { transform: translateY(-1px); box-shadow: 5px 6px 0 rgba(24, 49, 59, 0.14); }
+.fish-card.is-selected { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(23, 111, 135, 0.17), 4px 4px 0 rgba(24, 49, 59, 0.14); }
+.fish-card.is-matched { border-color: var(--green); background: #eff6ed; }
+.fish-card.is-incorrect { border-color: var(--coral); animation: card-shake 260ms ease; }
+.fish-select-button {
+  display: grid;
+  width: 100%;
+  min-height: 250px;
+  grid-template-rows: 156px 1fr;
+  gap: 8px;
+  padding: 13px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+.fish-select-button:disabled { cursor: default; opacity: 0.8; }
+.fish-illustration-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  min-height: 150px;
+  border-bottom: 1px dashed var(--line);
+  background: linear-gradient(180deg, rgba(23, 111, 135, 0.08), rgba(255, 253, 247, 0));
+}
+.species-svg { display: block; width: min(100%, 270px); height: 148px; overflow: visible; filter: drop-shadow(0 5px 4px rgba(24,49,59,.16)); }
+.fish-copy { min-width: 0; }
+.individual-name {
+  display: inline-block;
+  margin-bottom: 3px;
+  color: var(--coral);
+  font-family: var(--font-stamp);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.common-name { display: block; font-family: var(--font-interface); font-size: 1.08rem; line-height: 1.25; }
+.scientific-name { display: block; margin: 2px 0 8px; color: var(--muted); font-size: 0.9rem; }
+.measurement-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  border-top: 1px dotted rgba(95, 110, 110, 0.32);
+  color: var(--muted);
+  font-family: var(--font-interface);
+  font-size: 0.78rem;
+}
+.measurement-row b { color: var(--ink); text-align: right; }
+.habitat-line { display: block; margin-top: 7px; color: var(--muted); font-size: 0.94rem; line-height: 1.35; }
+.card-sources { border-top: 1px solid var(--line); }
+.card-sources summary {
+  padding: 7px 12px;
+  color: var(--blue-dark);
+  font-family: var(--font-interface);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.compact-source-list { margin: 0; padding: 0 12px 10px 28px; font-size: 0.75rem; }
+
+.tag-target {
+  position: relative;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 148px;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: var(--white);
+  text-align: left;
+  box-shadow: 3px 3px 0 rgba(24, 49, 59, 0.13);
+  transition: transform 100ms ease, background 100ms ease;
+}
+.tag-target:hover { transform: translate(1px, 1px); background: #fffef9; }
+.tag-target.is-drag-over { background: #e4efe9; outline: 4px dashed var(--green); outline-offset: -7px; }
+.tag-ruler {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 104px;
+  border: 1px solid var(--line);
+  background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(24,49,59,.14) 9px 10px);
+}
+.tag-ruler::after {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  color: var(--muted);
+  font-family: var(--font-interface);
+  font-size: 0.62rem;
+  content: "mm";
+}
+.tag-capsule {
+  width: min(var(--tag-width, 50px), 94px);
+  height: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--mustard);
+  box-shadow: inset -9px 0 rgba(24, 49, 59, 0.18);
+}
+.tag-copy { min-width: 0; }
+.tag-model { display: block; margin-bottom: 3px; color: var(--coral); }
+.tag-copy > strong { display: block; font-family: var(--font-interface); line-height: 1.25; }
+.tag-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 8px;
+  margin-top: 8px;
+}
+.tag-stat-grid span { min-width: 0; padding-top: 4px; border-top: 1px dotted rgba(95,110,110,.35); }
+.tag-stat-grid small, .tag-stat-grid b { display: block; font-family: var(--font-interface); }
+.tag-stat-grid small { color: var(--muted); font-size: 0.66rem; }
+.tag-stat-grid b { margin-top: 1px; font-size: 0.78rem; }
+.tag-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.tag-badge {
+  padding: 3px 5px;
+  border: 1px solid rgba(24, 49, 59, 0.25);
+  background: #f4f0e6;
+  font-family: var(--font-interface);
+  font-size: 0.63rem;
+  font-weight: 700;
+}
+.matched-list { display: block; margin-top: 6px; color: var(--green); font-family: var(--font-interface); font-size: 0.75rem; font-weight: 800; }
+.too-small-target { grid-template-columns: 110px minmax(0, 1fr); border-color: var(--coral); background: #fff8f4; }
+.no-tag-symbol {
+  display: grid;
+  place-items: center;
+  min-height: 104px;
+  border: 2px dashed var(--coral);
+  color: var(--coral);
+  font-family: var(--font-interface);
+  font-size: 3.3rem;
+  font-weight: 900;
+}
+.tag-explanation { display: block; margin-top: 7px; color: var(--muted); font-size: 0.92rem; line-height: 1.35; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.button {
+  min-height: 46px;
+  padding: 10px 17px;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  font-family: var(--font-interface);
+  font-size: 0.94rem;
+  font-weight: 800;
+  box-shadow: 3px 3px 0 rgba(24, 49, 59, 0.23);
+  transition: transform 90ms ease, box-shadow 90ms ease;
+}
+.button:hover:not(:disabled) { transform: translate(1px, 1px); box-shadow: 2px 2px 0 rgba(24,49,59,.23); }
+.button-primary { color: var(--white); background: var(--blue); }
+.button-success { color: var(--white); background: var(--green); }
+.button-secondary { color: var(--ink); background: #ded8ca; }
+.button-hint { color: #5f4714; background: #f3e5b7; }
+.button:disabled { cursor: not-allowed; opacity: 0.48; }
+
+.feedback-panel {
+  min-height: 58px;
+  margin: 13px 0 0;
+  padding: 11px 13px;
+  border-left: 4px solid var(--blue);
+  color: #274957;
+  background: rgba(255, 253, 247, 0.82);
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.feedback-panel.is-success { border-left-color: var(--green); background: #edf5eb; }
+.feedback-panel.is-error { border-left-color: var(--coral); background: #fff1ed; }
+.feedback-panel.is-hint { border-left-color: var(--mustard); background: #fff8dc; }
+.error-panel {
+  overflow: auto;
+  margin: 15px 0 0;
+  padding: 12px;
+  border: 2px solid #8e2d23;
+  color: #651d17;
+  background: #ffe2da;
+  white-space: pre-wrap;
+}
+
+.memory-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  max-height: min(72vh, 820px);
+  overflow: auto;
+  padding: 3px;
+}
+.memory-card {
+  position: relative;
+  min-height: 180px;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: var(--white);
+  perspective: 900px;
+  box-shadow: 3px 3px 0 rgba(24, 49, 59, 0.14);
+}
+.memory-card:disabled { cursor: default; opacity: 1; }
+.memory-card-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 280ms ease; }
+.memory-card.is-flipped .memory-card-inner, .memory-card.is-matched .memory-card-inner { transform: rotateY(180deg); }
+.memory-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  backface-visibility: hidden;
+  text-align: center;
+}
+.memory-card-back {
+  gap: 7px;
+  color: var(--white);
+  background: var(--blue-dark);
+  font-family: var(--font-display);
+}
+.memory-card-back span { font-size: 4rem; line-height: 0.75; }
+.memory-card-back small { font-family: var(--font-stamp); font-size: 0.62rem; }
+.memory-card-front { gap: 5px; background: var(--white); transform: rotateY(180deg); }
+.memory-card.is-matched { border-color: var(--green); box-shadow: 0 0 0 3px rgba(63,123,89,.18); }
+.memory-type { color: var(--coral); }
+.memory-illustration { display: grid; place-items: center; width: 100%; height: 73px; overflow: hidden; }
+.memory-illustration .species-svg { height: 73px; width: 135px; }
+.memory-card-front strong { font-family: var(--font-interface); line-height: 1.2; }
+.memory-card-front em { color: var(--muted); font-size: 0.78rem; }
+.memory-detail { color: var(--muted); font-family: var(--font-interface); font-size: 0.7rem; line-height: 1.25; }
+.memory-tag-visual {
+  display: block;
+  width: min(var(--tag-width, 50px), 100px);
+  height: 19px;
+  margin: 20px 0 18px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--mustard);
+  box-shadow: inset -9px 0 rgba(24,49,59,.18);
+}
+.memory-no-tag { display: grid; place-items: center; width: 67px; height: 67px; border: 2px dashed var(--coral); color: var(--coral); font-family: var(--font-interface); font-size: 2.6rem; font-weight: 900; }
+
+.completion-summary {
+  margin-top: 16px;
+  padding: 16px;
+  border: 2px solid var(--green);
+  background: #f1f6ed;
+  box-shadow: 4px 4px 0 rgba(63,123,89,.14);
+}
+.completion-summary > h3 { margin-bottom: 12px; font-size: 2rem; }
+.completion-summary h4 { margin: 17px 0 9px; font-size: 1.4rem; }
+.summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; }
+.summary-stats div { padding: 9px 10px; border: 1px solid rgba(63,123,89,.35); background: var(--white); }
+.summary-stats span, .summary-stats strong { display: block; font-family: var(--font-interface); }
+.summary-stats span { color: var(--muted); font-size: 0.72rem; }
+.summary-stats strong { margin-top: 2px; font-size: 1.15rem; }
+.review-grid { display: grid; gap: 7px; }
+.review-row {
+  display: grid;
+  grid-template-columns: 92px minmax(130px, 0.8fr) minmax(180px, 1.2fr);
+  gap: 10px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid rgba(63,123,89,.3);
+  background: var(--white);
+}
+.review-row > div { height: 58px; overflow: hidden; }
+.review-row .species-svg { width: 90px; height: 56px; }
+.review-row p { margin: 0; }
+.review-row strong, .review-row em, .review-row span { display: block; }
+.review-row strong { font-family: var(--font-interface); font-size: 0.82rem; }
+.review-row em, .review-row span { color: var(--muted); font-size: 0.76rem; }
+
+.field-notes h2 { margin: 6px 0 18px; font-size: 2.3rem; }
+.note-card {
+  margin: 0 0 13px;
+  padding: 13px 14px 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 253, 247, 0.72);
+}
+.note-card:nth-of-type(2) { transform: rotate(0.35deg); }
+.note-card:nth-of-type(3) { transform: rotate(-0.3deg); }
+.note-card h3 { margin-bottom: 6px; font-size: 1.38rem; }
+.note-card p, .margin-note p { margin-bottom: 0; color: var(--muted); font-size: 1.02rem; line-height: 1.48; }
+.transmitter-note { border-top: 4px solid var(--coral); }
+.receiver-note { border-top: 4px solid var(--blue); }
+.placement-note { border-top: 4px solid var(--green); }
+.margin-note { margin-top: 19px; padding: 14px 0 0; border-top: 2px solid var(--ink); }
+.margin-note strong { display: block; margin-bottom: 6px; font-size: 1.38rem; }
+.site-footer { padding: 24px 4px 36px; color: var(--muted); font-size: 0.88rem; }
+
+.info-dialog {
+  width: min(1000px, calc(100% - 24px));
+  max-height: calc(100vh - 28px);
+  padding: 0;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 10px 10px 0 rgba(24,49,59,.22);
+}
+.info-dialog::backdrop { background: rgba(20, 39, 46, 0.66); }
+.dialog-sheet { padding: 20px; overflow: auto; max-height: calc(100vh - 34px); }
+.dialog-heading { display: flex; justify-content: space-between; gap: 15px; align-items: start; border-bottom: 2px solid var(--ink); margin-bottom: 16px; }
+.dialog-heading h2 { margin-bottom: 10px; font-size: 2.6rem; }
+.dialog-close { min-width: 42px; min-height: 42px; border: 0; background: transparent; font-family: var(--font-interface); font-size: 2rem; line-height: 1; }
+.tutorial-grid, .science-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tutorial-grid article, .science-columns section {
+  padding: 13px;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+.tutorial-grid article > span { color: var(--coral); font-family: var(--font-stamp); }
+.tutorial-grid h3, .science-columns h3 { margin: 5px 0 6px; font-size: 1.5rem; }
+.tutorial-grid p, .science-columns p { margin-bottom: 0; color: var(--muted); line-height: 1.45; }
+.calculation-example { margin: 14px 0; padding: 14px; border-left: 4px solid var(--mustard); background: var(--white); }
+.calculation-example p { margin: 0 0 4px; }
+.calculation-example code { display: block; margin: 0 0 12px; font-family: var(--font-interface); font-weight: 800; }
+.source-list { display: grid; gap: 7px; }
+.source-list li { line-height: 1.3; }
+.source-list a, .source-list span { display: block; }
+.source-list a { font-family: var(--font-interface); font-size: 0.84rem; font-weight: 700; }
+.source-list span { color: var(--muted); font-size: 0.78rem; }
+.visual-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; padding-left: 0; list-style: none; }
+.visual-checklist li { padding: 8px 9px; border-left: 3px solid var(--blue); background: var(--white); }
+.visual-checklist strong, .visual-checklist span { display: block; }
+.visual-checklist strong { font-family: var(--font-interface); font-size: 0.8rem; }
+.visual-checklist span { color: var(--muted); font-size: 0.78rem; }
+.validation-box { margin: 15px 0; padding: 12px; border: 1px solid var(--green); background: #edf5eb; }
+.validation-box h3 { margin-bottom: 4px; }
+.validation-box p { margin: 0; font-family: var(--font-interface); font-size: 0.78rem; }
+.validation-box p.is-error { color: #76291f; }
+
+/* Embedded scientific comic illustrations */
+.species-svg * { vector-effect: non-scaling-stroke; }
+.species-svg .art-body,
+.species-svg .art-tail,
+.species-svg .art-fin,
+.species-svg .art-disc,
+.species-svg .art-tail-stem {
+  stroke: #18313b;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.species-svg .art-body, .species-svg .art-disc { stroke-width: 3; }
+.species-svg .art-tail, .species-svg .art-fin, .species-svg .art-tail-stem { stroke-width: 2.35; }
+.species-svg .art-line { fill: none; stroke: #18313b; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.species-svg .art-line-light { fill: none; stroke: rgba(255,255,255,.78); stroke-width: 2.1; stroke-linecap: round; }
+.species-svg .art-line-dark { fill: none; stroke: #28444c; stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+.species-svg .art-eye-white { fill: #fffdf7; stroke: #18313b; stroke-width: 1.8; }
+.species-svg .art-pupil { fill: #132a32; }
+.species-svg .art-eye-glint { fill: #fff; }
+.species-svg .art-spot-dark { fill: #31474b; stroke: rgba(24,49,59,.45); stroke-width: .7; }
+.species-svg .art-spot-light { fill: #f6eee0; stroke: rgba(24,49,59,.5); stroke-width: .8; }
+.species-svg .art-spot-orange { fill: #d77443; stroke: #713b2b; stroke-width: 1; }
+.species-svg .art-scale { fill: none; stroke: rgba(255,255,255,.34); stroke-width: .8; }
+.species-svg .art-thorn { fill: #dbc9a9; stroke: #18313b; stroke-width: 1.2; stroke-linejoin: round; }
+.species-svg .art-spine { fill: #e8ddc5; stroke: #18313b; stroke-width: 1.4; }
+.species-svg .art-soft { opacity: .82; }
+.species-svg .art-shadow { fill: rgba(24,49,59,.13); }
+
+@keyframes card-shake {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-5px); }
+  70% { transform: translateX(5px); }
+}
+
+:focus-visible {
+  position: relative;
+  z-index: 5;
+  outline: 3px solid rgba(197, 154, 55, 0.7);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1180px) {
+  .page-shell { grid-template-columns: 1fr; }
+  .field-notes { position: static; }
+}
+
+@media (max-width: 1050px) {
+  .matching-board { grid-template-columns: 1fr; }
+  .tag-target-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 850px) {
+  .site-header { flex-wrap: wrap; align-items: flex-start; }
+  .header-side { width: 100%; justify-content: space-between; }
+  .game-heading-with-tools { align-items: stretch; flex-direction: column; }
+  .inline-selectors { justify-content: flex-start; }
+  .compact-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .compact-hud .hud-state { grid-column: 1 / -1; }
+  .tag-target-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .site-header, .page-shell, .site-footer { width: min(100% - 18px, 1500px); }
+  .header-stamp { display: none; }
+  .game-sheet { padding: 13px; }
+  .fish-card-grid { grid-template-columns: 1fr; }
+  .fish-select-button { grid-template-columns: 120px minmax(0, 1fr); grid-template-rows: 1fr; min-height: 215px; }
+  .fish-illustration-wrap { min-height: 185px; border-bottom: 0; border-right: 1px dashed var(--line); }
+  .species-svg { width: 170px; height: 118px; }
+  .tutorial-grid, .science-columns, .visual-checklist { grid-template-columns: 1fr; }
+  .review-row { grid-template-columns: 72px minmax(0, 1fr); }
+  .review-row > p:last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 540px) {
+  .header-side, .field-tools, .language-control { width: 100%; }
+  .field-tools { align-items: stretch; }
+  .language-control { justify-content: space-between; }
+  .language-buttons { flex: 1 1 auto; }
+  .language-button { flex: 1 1 0; }
+  .utility-button { width: 100%; }
+  .inline-selectors, .compact-field { width: 100%; }
+  .compact-field select { width: 100%; }
+  .toggle-field { width: 100%; }
+  .fish-select-button { display: block; min-height: 0; }
+  .fish-illustration-wrap { min-height: 125px; border-right: 0; border-bottom: 1px dashed var(--line); }
+  .tag-target, .too-small-target { grid-template-columns: 80px minmax(0, 1fr); padding: 9px; }
+  .tag-ruler, .no-tag-symbol { min-height: 118px; }
+  .tag-stat-grid { grid-template-columns: 1fr; }
+  .memory-card-grid { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+  .controls .button { flex: 1 1 145px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+
+================================================================================
+FILE: core.js
+================================================================================
+
+"use strict";
+
+(function exposeCore(global) {
+  const TRANSLATIONS = Object.freeze({
+    en: Object.freeze({
+      documentTitle: "Field Notes — Fish and Acoustic Tag Lab",
+      mainTitle: "Field Notes",
+      subtitle: "Choose the smallest acoustic transmitter that meets each animal's research mission and welfare constraints.",
+      stampTraining: "TELEMETRY LAB",
+      languageLabel: "Language",
+      soundOn: "♫ Music: on",
+      soundOff: "♫ Music: off",
+      soundUnavailable: "Music unavailable",
+      footerCredit: "Educational telemetry game · by Pina",
+      fatalError: "Game build {version} stopped because of a JavaScript error:\n\n{message}",
+      matchingSection: "01 / TAG CHOICE",
+      matchingHeading: "Match each fish with its best-fit tag",
+      modeLabel: "Mode",
+      difficultyLabel: "Difficulty",
+      sortingMode: "Direct match",
+      memoryMode: "Memory",
+      difficultyEasy: "Easy",
+      difficultyMedium: "Medium",
+      difficultyHard: "Hard",
+      scienceDisclaimer: "Educational simplification only. The 2% burden threshold is a conservative teaching rule, not a universal biological safety law. Real studies require species-specific evidence, permits, trained researchers and welfare review.",
+      matchingStatusLabel: "Fish and tag matching status",
+      hudLevel: "Level",
+      hudScore: "Score",
+      hudAttempts: "Attempts",
+      hudMoves: "Turns",
+      hudProgress: "Progress",
+      hudStatus: "Status",
+      stateReady: "Ready",
+      stateComplete: "Complete",
+      statePreview: "Preview",
+      sortingInstructions: "Select or drag a fish, read its research mission, then choose the smallest tag that satisfies every constraint.",
+      memoryInstructions: "Reveal two cards. A fish matches any tag card that is scientifically correct for that individual.",
+      fishCardsTitle: "Fish cards",
+      tagTargetsTitle: "Available tag options",
+      memoryBoardLabel: "Fish and acoustic tag memory cards",
+      buttonRestartRound: "Restart round",
+      buttonNextDifficulty: "Next difficulty",
+      buttonHint: "Show hint",
+      buttonTutorial: "How to play",
+      buttonScience: "About the science",
+      buttonClose: "Close",
+      matchingNotesSection: "02 / FIELD NOTES",
+      matchingNotesHeading: "How the model decides",
+      tagFitHeading: "Mass and anatomy",
+      tagFitBody: "Internal tags must remain within the teaching burden threshold and the individual's simplified diameter and length limits.",
+      tagTradeoffHeading: "Research requirements",
+      tagTradeoffBody: "Battery duration, output class, sensors and attachment method can rule out an otherwise small transmitter.",
+      tagEvidenceHeading: "Best-fit rule",
+      tagEvidenceBody: "The correct answer is the smallest and lightest available transmitter that passes all checks—not the largest tag the fish could carry.",
+      placeholderHeading: "Animal welfare",
+      placeholderBody: "Some individuals should not be tagged with the available equipment. Sharks and rays in this game use an external option only where the simplified anatomy and study requirements permit it.",
+      selectedFish: "Selected {name}. Compare the mission with the available tags.",
+      chooseFishFirst: "Select a fish before choosing a tag.",
+      correctPrefix: "Correct.",
+      incorrectPrefix: "Not the best fit.",
+      sortingComplete: "Round complete: {score} points, {firstAttempts} correct on the first attempt.",
+      memoryReady: "Find every scientifically compatible fish–tag pair.",
+      memoryPreview: "Study the board. The cards will turn face down shortly.",
+      memoryNoMatch: "Those cards are not compatible under this board's scientific rules.",
+      memoryMatch: "Pair found: {fish} and {tag}.",
+      memoryComplete: "Memory complete in {moves} turns with {mismatches} mismatches.",
+      hiddenCardLabel: "Hidden card",
+      fishCardType: "Fish",
+      tagCardType: "Tag",
+      individualLabel: "Individual",
+      lengthLabel: "Length",
+      massLabel: "Body mass",
+      lifeStageLabel: "Life stage",
+      habitatLabel: "Habitat",
+      missionLabel: "Research mission",
+      batteryLabel: "Battery estimate",
+      sensorsLabel: "Sensors",
+      attachmentLabel: "Attachment",
+      diameterLabel: "Diameter",
+      tagLengthLabel: "Tag length",
+      tagMassLabel: "Mass in air",
+      modelLabel: "Reference model",
+      outputLabel: "Output class",
+      frequencyLabel: "Frequency",
+      burdenLabel: "Tag burden",
+      teachingLimitLabel: "Teaching limit",
+      sourceLabel: "Sources",
+      showSources: "Show sources",
+      noSensors: "No sensor",
+      sensorTemperature: "Temperature",
+      sensorDepth: "Depth",
+      attachmentInternal: "Internal",
+      attachmentExternal: "External",
+      outputLow: "Low",
+      outputStandard: "Standard",
+      outputHigh: "High",
+      lifeJuvenile: "Juvenile",
+      lifeSubadult: "Subadult",
+      lifeAdult: "Adult",
+      lengthTotal: "total length",
+      lengthFork: "fork length",
+      lengthStandard: "standard length",
+      lengthDiscWidth: "disc width",
+      days: "{count} days",
+      khz: "{value} kHz",
+      tooSmallName: "Too small to tag",
+      tooSmallShort: "No available transmitter passes all welfare, anatomy and mission checks.",
+      tooSmallCardLabel: "Choose no tag for this individual",
+      reasonWrongAttachment: "The attachment type is incompatible with this tag.",
+      reasonFishAttachmentUnsupported: "This individual does not support the mission's attachment method in the game model.",
+      reasonTooHeavy: "The internal tag exceeds the configured 2% teaching burden threshold.",
+      reasonExternalFishTooSmall: "This individual is too small for the available external case in this simplified model.",
+      reasonTooWide: "The transmitter is wider than the individual's simplified anatomical limit.",
+      reasonTooLong: "The transmitter is longer than the individual's simplified anatomical limit.",
+      reasonBatteryShort: "The battery estimate is shorter than the mission requires.",
+      reasonMissingTemperature: "The mission requires a temperature sensor.",
+      reasonMissingDepth: "The mission requires a depth sensor.",
+      reasonOutputLow: "The transmitter output class is below the mission requirement.",
+      reasonLargerThanNeeded: "This tag passes the checks, but a smaller and lighter available tag also meets the mission.",
+      reasonTagExists: "A suitable available tag exists, so “Too small to tag” is not correct.",
+      burdenSentence: "{tagMass} g ÷ {fishMass} g × 100 = {burden}%.",
+      externalBurdenSentence: "External attachment selected. The mass ratio is {burden}% for context, but the internal 2% teaching check is not used.",
+      meetsMissionSentence: "It meets the {battery}-day battery requirement, {output} output requirement and required sensor/attachment checks.",
+      tooSmallExplanation: "The smallest promising option still fails: {reason}",
+      hintSelectFish: "Select a fish to reveal a hint.",
+      hintMission: "Mission: {mission} Minimum battery: {battery} days. Attachment: {attachment}. Required sensors: {sensors}.",
+      hintBurden: "For an internal tag, divide tag mass in air by fish mass and multiply by 100. The teaching limit is {limit}%.",
+      summaryHeading: "Round review",
+      summaryScore: "Score",
+      summaryFirstAttempts: "Correct first attempts",
+      summaryAccuracy: "Accuracy",
+      summaryMismatches: "Mismatches",
+      summaryBest: "Best turns for this board size",
+      summaryReview: "Scientific match review",
+      accuracyValue: "{value}%",
+      notAvailable: "—",
+      tutorialHeading: "How to play",
+      tutorialStep1Title: "1. Read the individual",
+      tutorialStep1Body: "Length is context, but the matching calculation uses body mass, anatomy, life stage and allowed attachment type.",
+      tutorialStep2Title: "2. Read the mission",
+      tutorialStep2Body: "A mission may require a minimum battery duration, a sensor, an output class and an internal or external attachment.",
+      tutorialStep3Title: "3. Test the smallest tag first",
+      tutorialStep3Body: "Reject tags that fail a check, then choose the smallest and lightest remaining option.",
+      tutorialStep4Title: "4. Choose no tag when needed",
+      tutorialStep4Body: "“Too small to tag” is correct when every available transmitter fails at least one relevant constraint.",
+      scienceHeading: "About the science",
+      scienceModelTitle: "Simplified decision model",
+      scienceModelBody: "The game uses current 69 kHz transmitter specifications, exact model variants and a configurable 2% internal tag-burden teaching threshold. Passing the calculation does not establish real-world safety.",
+      scienceBurdenTitle: "Burden calculation",
+      scienceBurdenBody: "Internal tag burden = tag mass in air ÷ fish body mass × 100.",
+      scienceExternalTitle: "External attachment",
+      scienceExternalBody: "Large sharks and rays use external-capable V16 cases in selected missions. The game does not teach attachment procedures.",
+      scienceSourcesTitle: "Primary sources",
+      scienceVisualTitle: "Illustration reference checklist",
+      sourceAccessed: "Accessed {date}",
+      testHeading: "Development validation",
+      testPassed: "All {count} validation checks passed.",
+      testFailed: "Validation found {count} issue(s)."
+    }),
+    de: Object.freeze({
+      documentTitle: "Feldnotizen — Fisch- und Akustiksenderlabor",
+      mainTitle: "Feldnotizen",
+      subtitle: "Wähle den kleinsten Akustiksender, der Forschungsauftrag und Tierschutzgrenzen jedes Tieres erfüllt.",
+      stampTraining: "TELEMETRIE-LABOR",
+      languageLabel: "Sprache",
+      soundOn: "♫ Musik: an",
+      soundOff: "♫ Musik: aus",
+      soundUnavailable: "Musik nicht verfügbar",
+      footerCredit: "Lernspiel zur Telemetrie · von Pina",
+      fatalError: "Spiel-Build {version} wurde wegen eines JavaScript-Fehlers angehalten:\n\n{message}",
+      matchingSection: "01 / SENDERWAHL",
+      matchingHeading: "Ordne jedem Fisch den besten Sender zu",
+      modeLabel: "Modus",
+      difficultyLabel: "Schwierigkeit",
+      sortingMode: "Direkte Zuordnung",
+      memoryMode: "Memory",
+      difficultyEasy: "Einfach",
+      difficultyMedium: "Mittel",
+      difficultyHard: "Schwer",
+      scienceDisclaimer: "Nur ein vereinfachtes Lernmodell. Die 2-%-Belastungsgrenze ist eine konservative Unterrichtsregel und kein universelles biologisches Sicherheitsgesetz. Reale Studien benötigen artspezifische Evidenz, Genehmigungen, geschultes Personal und Tierschutzprüfung.",
+      matchingStatusLabel: "Status der Fisch-Sender-Zuordnung",
+      hudLevel: "Level",
+      hudScore: "Punkte",
+      hudAttempts: "Versuche",
+      hudMoves: "Züge",
+      hudProgress: "Fortschritt",
+      hudStatus: "Status",
+      stateReady: "Bereit",
+      stateComplete: "Abgeschlossen",
+      statePreview: "Vorschau",
+      sortingInstructions: "Wähle oder ziehe einen Fisch, lies den Forschungsauftrag und wähle dann den kleinsten Sender, der alle Bedingungen erfüllt.",
+      memoryInstructions: "Decke zwei Karten auf. Ein Fisch passt zu jeder Senderkarte, die für dieses Individuum wissenschaftlich richtig ist.",
+      fishCardsTitle: "Fischkarten",
+      tagTargetsTitle: "Verfügbare Senderoptionen",
+      memoryBoardLabel: "Memory-Karten mit Fischen und Akustiksendern",
+      buttonRestartRound: "Runde neu starten",
+      buttonNextDifficulty: "Nächste Schwierigkeit",
+      buttonHint: "Hinweis zeigen",
+      buttonTutorial: "Spielanleitung",
+      buttonScience: "Über die Wissenschaft",
+      buttonClose: "Schließen",
+      matchingNotesSection: "02 / FELDNOTIZEN",
+      matchingNotesHeading: "So entscheidet das Modell",
+      tagFitHeading: "Masse und Anatomie",
+      tagFitBody: "Interne Sender müssen unter der Lern-Belastungsgrenze bleiben und die vereinfachten Durchmesser- und Längengrenzen des Individuums einhalten.",
+      tagTradeoffHeading: "Forschungsanforderungen",
+      tagTradeoffBody: "Batteriedauer, Leistungsklasse, Sensoren und Befestigungsart können einen ansonsten kleinen Sender ausschließen.",
+      tagEvidenceHeading: "Best-Fit-Regel",
+      tagEvidenceBody: "Richtig ist der kleinste und leichteste verfügbare Sender, der alle Prüfungen besteht – nicht der größte Sender, den der Fisch tragen könnte.",
+      placeholderHeading: "Tierschutz",
+      placeholderBody: "Einige Individuen sollten mit den verfügbaren Geräten nicht markiert werden. Haie und Rochen erhalten im Spiel nur dann eine externe Option, wenn vereinfachte Anatomie und Forschungsauftrag dies erlauben.",
+      selectedFish: "{name} ausgewählt. Vergleiche den Auftrag mit den verfügbaren Sendern.",
+      chooseFishFirst: "Wähle zuerst einen Fisch aus.",
+      correctPrefix: "Richtig.",
+      incorrectPrefix: "Nicht die beste Wahl.",
+      sortingComplete: "Runde abgeschlossen: {score} Punkte, {firstAttempts} beim ersten Versuch richtig.",
+      memoryReady: "Finde alle wissenschaftlich passenden Fisch-Sender-Paare.",
+      memoryPreview: "Präge dir das Feld ein. Die Karten drehen sich gleich um.",
+      memoryNoMatch: "Diese Karten sind nach den wissenschaftlichen Regeln dieses Spielfelds nicht kompatibel.",
+      memoryMatch: "Paar gefunden: {fish} und {tag}.",
+      memoryComplete: "Memory in {moves} Zügen mit {mismatches} Fehlpaaren abgeschlossen.",
+      hiddenCardLabel: "Verdeckte Karte",
+      fishCardType: "Fisch",
+      tagCardType: "Sender",
+      individualLabel: "Individuum",
+      lengthLabel: "Länge",
+      massLabel: "Körpermasse",
+      lifeStageLabel: "Lebensstadium",
+      habitatLabel: "Lebensraum",
+      missionLabel: "Forschungsauftrag",
+      batteryLabel: "Batterieschätzung",
+      sensorsLabel: "Sensoren",
+      attachmentLabel: "Befestigung",
+      diameterLabel: "Durchmesser",
+      tagLengthLabel: "Senderlänge",
+      tagMassLabel: "Masse in Luft",
+      modelLabel: "Referenzmodell",
+      outputLabel: "Leistungsklasse",
+      frequencyLabel: "Frequenz",
+      burdenLabel: "Senderbelastung",
+      teachingLimitLabel: "Lerngrenze",
+      sourceLabel: "Quellen",
+      showSources: "Quellen anzeigen",
+      noSensors: "Kein Sensor",
+      sensorTemperature: "Temperatur",
+      sensorDepth: "Tiefe",
+      attachmentInternal: "Intern",
+      attachmentExternal: "Extern",
+      outputLow: "Niedrig",
+      outputStandard: "Standard",
+      outputHigh: "Hoch",
+      lifeJuvenile: "Jungtier",
+      lifeSubadult: "Subadult",
+      lifeAdult: "Erwachsen",
+      lengthTotal: "Gesamtlänge",
+      lengthFork: "Gabellänge",
+      lengthStandard: "Standardlänge",
+      lengthDiscWidth: "Scheibenbreite",
+      days: "{count} Tage",
+      khz: "{value} kHz",
+      tooSmallName: "Zu klein zum Markieren",
+      tooSmallShort: "Kein verfügbarer Sender erfüllt alle Tierschutz-, Anatomie- und Auftragsbedingungen.",
+      tooSmallCardLabel: "Für dieses Individuum keinen Sender auswählen",
+      reasonWrongAttachment: "Die Befestigungsart ist mit diesem Sender nicht kompatibel.",
+      reasonFishAttachmentUnsupported: "Dieses Individuum unterstützt die Befestigungsart des Auftrags im Spielmodell nicht.",
+      reasonTooHeavy: "Der interne Sender überschreitet die konfigurierte 2-%-Lerngrenze.",
+      reasonExternalFishTooSmall: "Dieses Individuum ist im vereinfachten Modell zu klein für das verfügbare externe Gehäuse.",
+      reasonTooWide: "Der Sender ist breiter als die vereinfachte anatomische Grenze des Individuums.",
+      reasonTooLong: "Der Sender ist länger als die vereinfachte anatomische Grenze des Individuums.",
+      reasonBatteryShort: "Die geschätzte Batteriedauer ist kürzer als für den Auftrag erforderlich.",
+      reasonMissingTemperature: "Der Auftrag benötigt einen Temperatursensor.",
+      reasonMissingDepth: "Der Auftrag benötigt einen Tiefensensor.",
+      reasonOutputLow: "Die Leistungsklasse des Senders liegt unter der Anforderung des Auftrags.",
+      reasonLargerThanNeeded: "Dieser Sender besteht die Prüfungen, aber ein kleinerer und leichterer verfügbarer Sender erfüllt den Auftrag ebenfalls.",
+      reasonTagExists: "Es gibt einen geeigneten verfügbaren Sender; daher ist „Zu klein zum Markieren“ nicht richtig.",
+      burdenSentence: "{tagMass} g ÷ {fishMass} g × 100 = {burden}%.",
+      externalBurdenSentence: "Externe Befestigung gewählt. Das Massenverhältnis beträgt zur Einordnung {burden}%; die interne 2-%-Lernprüfung wird hier nicht verwendet.",
+      meetsMissionSentence: "Der Sender erfüllt die Batterievorgabe von {battery} Tagen, die Leistungsanforderung {output} sowie die Sensor- und Befestigungsprüfungen.",
+      tooSmallExplanation: "Die kleinste aussichtsreiche Option scheitert weiterhin: {reason}",
+      hintSelectFish: "Wähle einen Fisch aus, um einen Hinweis zu erhalten.",
+      hintMission: "Auftrag: {mission} Mindestbatterie: {battery} Tage. Befestigung: {attachment}. Benötigte Sensoren: {sensors}.",
+      hintBurden: "Bei einem internen Sender: Masse des Senders in Luft durch Fischmasse teilen und mit 100 multiplizieren. Die Lerngrenze beträgt {limit}%.",
+      summaryHeading: "Rundenauswertung",
+      summaryScore: "Punkte",
+      summaryFirstAttempts: "Beim ersten Versuch richtig",
+      summaryAccuracy: "Genauigkeit",
+      summaryMismatches: "Fehlpaare",
+      summaryBest: "Beste Zugzahl für diese Feldgröße",
+      summaryReview: "Wissenschaftliche Zuordnung",
+      accuracyValue: "{value}%",
+      notAvailable: "—",
+      tutorialHeading: "Spielanleitung",
+      tutorialStep1Title: "1. Individuum lesen",
+      tutorialStep1Body: "Die Länge liefert Kontext; die Zuordnung verwendet aber Körpermasse, Anatomie, Lebensstadium und erlaubte Befestigungsart.",
+      tutorialStep2Title: "2. Auftrag lesen",
+      tutorialStep2Body: "Ein Auftrag kann Mindestbatteriedauer, Sensor, Leistungsklasse und interne oder externe Befestigung verlangen.",
+      tutorialStep3Title: "3. Kleinsten Sender zuerst prüfen",
+      tutorialStep3Body: "Schließe Sender aus, die eine Prüfung nicht bestehen, und wähle dann die kleinste und leichteste verbleibende Option.",
+      tutorialStep4Title: "4. Bei Bedarf keinen Sender wählen",
+      tutorialStep4Body: "„Zu klein zum Markieren“ ist richtig, wenn jeder verfügbare Sender mindestens eine relevante Bedingung verletzt.",
+      scienceHeading: "Über die Wissenschaft",
+      scienceModelTitle: "Vereinfachtes Entscheidungsmodell",
+      scienceModelBody: "Das Spiel verwendet aktuelle Spezifikationen von 69-kHz-Sendern, konkrete Modellvarianten und eine konfigurierbare 2-%-Lerngrenze für interne Sender. Das Bestehen der Rechnung belegt keine reale Sicherheit.",
+      scienceBurdenTitle: "Belastungsrechnung",
+      scienceBurdenBody: "Interne Senderbelastung = Sendermasse in Luft ÷ Fischkörpermasse × 100.",
+      scienceExternalTitle: "Externe Befestigung",
+      scienceExternalBody: "Große Haie und Rochen verwenden in ausgewählten Aufträgen extern nutzbare V16-Gehäuse. Das Spiel vermittelt keine Befestigungsverfahren.",
+      scienceSourcesTitle: "Primärquellen",
+      scienceVisualTitle: "Referenzcheckliste der Illustrationen",
+      sourceAccessed: "Abgerufen am {date}",
+      testHeading: "Entwicklungsvalidierung",
+      testPassed: "Alle {count} Validierungsprüfungen bestanden.",
+      testFailed: "Die Validierung fand {count} Problem(e)."
+    })
+  });
+
+  class I18n {
+    constructor(messages) {
+      this.messages = messages;
+      this.language = this.readInitialLanguage();
+    }
+
+    readInitialLanguage() {
+      try {
+        const saved = global.localStorage?.getItem("telemetryLanguage");
+        if (saved && this.messages[saved]) return saved;
+      } catch (error) {
+        console.warn("Language preference could not be read.", error);
+      }
+      const browserLanguage = String(global.navigator?.language || "en").slice(0, 2).toLowerCase();
+      return this.messages[browserLanguage] ? browserLanguage : "en";
+    }
+
+    setLanguage(language) {
+      if (!this.messages[language]) return;
+      this.language = language;
+      try {
+        global.localStorage?.setItem("telemetryLanguage", language);
+      } catch (error) {
+        console.warn("Language preference could not be saved.", error);
+      }
+    }
+
+    t(key, parameters = {}) {
+      const fallback = this.messages.en[key];
+      const value = this.messages[this.language][key] ?? fallback ?? key;
+      return String(value).replace(/\{(\w+)\}/g, (_, name) =>
+        Object.prototype.hasOwnProperty.call(parameters, name) ? String(parameters[name]) : `{${name}}`
+      );
+    }
+
+    value(localizedValue) {
+      if (localizedValue && typeof localizedValue === "object") {
+        return localizedValue[this.language] ?? localizedValue.en ?? "";
+      }
+      return String(localizedValue ?? "");
+    }
+
+    number(value, fractionDigits = 1) {
+      const locale = this.language === "de" ? "de-DE" : "en-GB";
+      return new Intl.NumberFormat(locale, {
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits
+      }).format(value);
+    }
+
+    integer(value) {
+      const locale = this.language === "de" ? "de-DE" : "en-GB";
+      return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
+    }
+
+    applyStaticText() {
+      document.documentElement.lang = this.language;
+      document.title = this.t("documentTitle");
+      document.querySelectorAll("[data-i18n]").forEach((element) => {
+        element.textContent = this.t(element.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+        element.setAttribute("aria-label", this.t(element.dataset.i18nAriaLabel));
+      });
+      document.querySelectorAll("[data-language]").forEach((button) => {
+        const active = button.dataset.language === this.language;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+  }
+
+  class AudioManager {
+    constructor() {
+      this.AudioContextClass = global.AudioContext || global.webkitAudioContext || null;
+      this.context = null;
+      this.effectsGain = null;
+      this.music = document.getElementById("backgroundMusic") || null;
+      this.supported = Boolean(this.music && typeof this.music.play === "function");
+      this.enabled = false;
+      this.targetVolume = 0.24;
+      this.fadeFrame = null;
+
+      if (this.music) {
+        this.music.loop = true;
+        this.music.preload = "metadata";
+        this.music.volume = 0;
+      }
+    }
+
+    ensureEffectsContext() {
+      if (!this.AudioContextClass) return false;
+      if (this.context) return true;
+      this.context = new this.AudioContextClass();
+      this.effectsGain = this.context.createGain();
+      this.effectsGain.gain.value = 0.42;
+      this.effectsGain.connect(this.context.destination);
+      return true;
+    }
+
+    async toggle() {
+      if (!this.supported) return false;
+      if (this.enabled) {
+        this.disable();
+        return false;
+      }
+
+      try {
+        if (this.ensureEffectsContext() && this.context.state === "suspended") {
+          await this.context.resume();
+        }
+        await this.music.play();
+        this.enabled = true;
+        this.fadeMusic(this.targetVolume, 420);
+        this.playTone(330, 0.08, 0.05, "sine");
+        this.playTone(495, 0.1, 0.045, "sine", 0.08);
+        return true;
+      } catch (error) {
+        this.enabled = false;
+        console.warn("Background music could not be started.", error);
+        return false;
+      }
+    }
+
+    disable() {
+      if (!this.music) return;
+      this.enabled = false;
+      this.fadeMusic(0, 220, () => this.music.pause());
+    }
+
+    fadeMusic(target, duration, onComplete) {
+      if (!this.music) return;
+      if (this.fadeFrame) global.cancelAnimationFrame(this.fadeFrame);
+      const startVolume = this.music.volume;
+      const startedAt = global.performance?.now?.() ?? Date.now();
+      const tick = (timestamp) => {
+        const now = Number.isFinite(timestamp) ? timestamp : Date.now();
+        const progress = Math.min(1, (now - startedAt) / duration);
+        this.music.volume = Math.max(0, Math.min(1, startVolume + (target - startVolume) * progress));
+        if (progress < 1) this.fadeFrame = global.requestAnimationFrame(tick);
+        else {
+          this.fadeFrame = null;
+          onComplete?.();
+        }
+      };
+      this.fadeFrame = global.requestAnimationFrame(tick);
+    }
+
+    playTone(frequency, duration, gainValue, type = "sine", delay = 0) {
+      if (!this.enabled || !this.ensureEffectsContext()) return;
+      const start = this.context.currentTime + delay;
+      const oscillator = this.context.createOscillator();
+      const gain = this.context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(gainValue, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain);
+      gain.connect(this.effectsGain);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.03);
+    }
+
+    playSuccess() {
+      [523.25, 659.25, 783.99].forEach((frequency, index) => this.playTone(frequency, 0.35, 0.11, "sine", index * 0.11));
+    }
+
+    playFailure() {
+      this.playTone(392, 0.32, 0.09, "triangle");
+      this.playTone(293.66, 0.45, 0.075, "triangle", 0.17);
+    }
+
+    playSelect() {
+      this.playTone(440, 0.08, 0.04, "sine");
+    }
+  }
+
+  const languageManager = new I18n(TRANSLATIONS);
+  const audioManager = new AudioManager();
+
+  function updateAudioButton() {
+    const button = document.getElementById("audioToggleButton");
+    if (!button) return;
+    if (!audioManager.supported) {
+      button.disabled = true;
+      button.textContent = languageManager.t("soundUnavailable");
+      button.setAttribute("aria-pressed", "false");
+      return;
+    }
+    button.disabled = false;
+    button.textContent = languageManager.t(audioManager.enabled ? "soundOn" : "soundOff");
+    button.setAttribute("aria-pressed", String(audioManager.enabled));
+  }
+
+  function bindStandaloneControls(gameInstance) {
+    document.querySelectorAll("[data-language]").forEach((button) => {
+      button.addEventListener("click", () => {
+        languageManager.setLanguage(button.dataset.language);
+        languageManager.applyStaticText();
+        gameInstance.applyLanguage();
+        updateAudioButton();
+      });
+    });
+
+    const audioButton = document.getElementById("audioToggleButton");
+    audioButton?.addEventListener("click", async () => {
+      await audioManager.toggle();
+      updateAudioButton();
+    });
+    updateAudioButton();
+  }
+
+  function showStandaloneError(error, version) {
+    const panel = document.getElementById("errorPanel");
+    const message = error instanceof Error ? `${error.message}\n\n${error.stack || ""}` : String(error);
+    if (panel) {
+      panel.hidden = false;
+      panel.textContent = languageManager.t("fatalError", { version, message });
+    }
+    console.error(error);
+  }
+
+  global.TelemetryCore = Object.freeze({
+    TRANSLATIONS,
+    I18n,
+    AudioManager,
+    languageManager,
+    audioManager,
+    updateAudioButton,
+    bindStandaloneControls,
+    showStandaloneError
+  });
+})(globalThis);
+
+
+================================================================================
+FILE: game-data.js
+================================================================================
+
+"use strict";
+
+(function exposeGameData(global) {
+  const ACCESSED_DATE = "2026-07-25";
+  const DEFAULT_MAX_TAG_BURDEN_PERCENT = 2;
+
+  const SCIENCE_SOURCES = Object.freeze({
+    innovasea69: {
+      id: "innovasea69",
+      title: "Coded Transmitters – 69 kHz (DOC-6948-10)",
+      organization: "Innovasea",
+      publicationYear: 2025,
+      accessedDate: ACCESSED_DATE,
+      url: "https://www.innovasea.com/wp-content/uploads/2026/02/Coded_Tags_69kHz_6948_10_1025.pdf",
+      type: "manufacturer"
+    },
+    innovaseaTags: {
+      id: "innovaseaTags",
+      title: "Acoustic Tags",
+      organization: "Innovasea",
+      accessedDate: ACCESSED_DATE,
+      url: "https://www.innovasea.com/fish-tracking/tags/",
+      type: "manufacturer"
+    },
+    jepsen2005: {
+      id: "jepsen2005",
+      title: "A brief discussion on the 2% tag/bodymass rule of thumb",
+      organization: "FAO / DTU",
+      publicationYear: 2005,
+      accessedDate: ACCESSED_DATE,
+      url: "https://orbit.dtu.dk/en/publications/a-brief-discussion-on-the-2-tagbodymass-rule-of-thumb/",
+      type: "peer-reviewed"
+    },
+    externalAttachment2022: {
+      id: "externalAttachment2022",
+      title: "Evaluation of six methods for external attachment of electronic tags to fish",
+      organization: "NOAA Institutional Repository",
+      publicationYear: 2022,
+      accessedDate: ACCESSED_DATE,
+      url: "https://repository.library.noaa.gov/view/noaa/44463",
+      type: "peer-reviewed"
+    },
+    herring: fishBaseSource("Clupea harengus", "https://www.fishbase.se/summary/Clupea-harengus.html"),
+    sprat: fishBaseSource("Sprattus sprattus", "https://www.fishbase.se/summary/Sprattus-sprattus.html"),
+    mackerel: fishBaseSource("Scomber scombrus", "https://www.fishbase.se/summary/Scomber-scombrus.html"),
+    cod: fishBaseSource("Gadus morhua", "https://www.fishbase.se/summary/Gadus-morhua.html"),
+    haddock: fishBaseSource("Melanogrammus aeglefinus", "https://www.fishbase.se/summary/Melanogrammus-aeglefinus.html"),
+    plaice: fishBaseSource("Pleuronectes platessa", "https://www.fishbase.se/summary/Pleuronectes-platessa.html"),
+    salmon: fishBaseSource("Salmo salar", "https://www.fishbase.se/summary/Salmo-salar.html"),
+    eel: fishBaseSource("Anguilla anguilla", "https://www.fishbase.se/summary/Anguilla-anguilla.html"),
+    seabass: fishBaseSource("Dicentrarchus labrax", "https://www.fishbase.se/summary/Dicentrarchus-labrax.html"),
+    dogfish: fishBaseSource("Squalus acanthias", "https://www.fishbase.se/summary/Squalus-acanthias.html"),
+    catshark: fishBaseSource("Scyliorhinus canicula", "https://www.fishbase.se/summary/Scyliorhinus-canicula.html"),
+    tope: fishBaseSource("Galeorhinus galeus", "https://www.fishbase.se/summary/Galeorhinus-galeus.html"),
+    thornback: fishBaseSource("Raja clavata", "https://www.fishbase.se/summary/Raja-clavata.html"),
+    spottedRay: fishBaseSource("Raja montagui", "https://www.fishbase.se/summary/Raja-montagui.html"),
+    pollack: fishBaseSource("Pollachius pollachius", "https://www.fishbase.se/summary/Pollachius-pollachius.html")
+  });
+
+  function fishBaseSource(scientificName, url) {
+    return {
+      id: scientificName.toLowerCase().replace(/\s+/g, "-"),
+      title: `${scientificName} species summary`,
+      organization: "FishBase",
+      accessedDate: ACCESSED_DATE,
+      url,
+      type: "species-database"
+    };
+  }
+
+  const TAG_CATALOGUE = Object.freeze([
+    tag({
+      id: "v6",
+      educationalName: { en: "Micro acoustic tag", de: "Mikro-Akustiksender" },
+      referenceModel: "V6-2x",
+      diameterMm: 6.3,
+      lengthMm: 13,
+      weightInAirGrams: 0.9,
+      weightInWaterGrams: 0.5,
+      batteryDays: 202,
+      sensors: [],
+      outputClass: "low",
+      outputDb: "137 / 141",
+      attachmentTypes: ["internal"],
+      visualWidth: 34
+    }),
+    tag({
+      id: "v7tp",
+      educationalName: { en: "Mini sensor tag", de: "Mini-Sensorsender" },
+      referenceModel: "V7TP-2x",
+      diameterMm: 7,
+      lengthMm: 21,
+      weightInAirGrams: 1.7,
+      weightInWaterGrams: 0.8,
+      batteryDays: 244,
+      sensors: ["temperature", "depth"],
+      outputClass: "low",
+      outputDb: "137 / 141",
+      attachmentTypes: ["internal"],
+      visualWidth: 42
+    }),
+    tag({
+      id: "v9",
+      educationalName: { en: "Small acoustic tag", de: "Kleiner Akustiksender" },
+      referenceModel: "V9-1x",
+      diameterMm: 9,
+      lengthMm: 24,
+      weightInAirGrams: 3.6,
+      weightInWaterGrams: 2,
+      batteryDays: 648,
+      sensors: [],
+      outputClass: "standard",
+      outputDb: "146 / 151",
+      attachmentTypes: ["internal"],
+      visualWidth: 50
+    }),
+    tag({
+      id: "v9tp",
+      educationalName: { en: "Small sensor tag", de: "Kleiner Sensorsender" },
+      referenceModel: "V9TP-2x",
+      diameterMm: 9,
+      lengthMm: 31,
+      weightInAirGrams: 4.9,
+      weightInWaterGrams: 2.8,
+      batteryDays: 730,
+      sensors: ["temperature", "depth"],
+      outputClass: "standard",
+      outputDb: "146 / 151",
+      attachmentTypes: ["internal"],
+      visualWidth: 56
+    }),
+    tag({
+      id: "v13",
+      educationalName: { en: "Medium acoustic tag", de: "Mittlerer Akustiksender" },
+      referenceModel: "V13-1x",
+      diameterMm: 13,
+      lengthMm: 31.5,
+      weightInAirGrams: 9.4,
+      weightInWaterGrams: 4.4,
+      batteryDays: 1825,
+      sensors: [],
+      outputClass: "standard",
+      outputDb: "147 / 152",
+      attachmentTypes: ["internal"],
+      visualWidth: 64
+    }),
+    tag({
+      id: "v13tp",
+      educationalName: { en: "Medium sensor tag", de: "Mittlerer Sensorsender" },
+      referenceModel: "V13TP-1x",
+      diameterMm: 13,
+      lengthMm: 41.5,
+      weightInAirGrams: 11.3,
+      weightInWaterGrams: 5.5,
+      batteryDays: 1347,
+      sensors: ["temperature", "depth"],
+      outputClass: "standard",
+      outputDb: "147 / 152",
+      attachmentTypes: ["internal"],
+      visualWidth: 72
+    }),
+    tag({
+      id: "v16",
+      educationalName: { en: "Large external-capable tag", de: "Großer extern nutzbarer Sender" },
+      referenceModel: "V16-4x",
+      diameterMm: 16,
+      lengthMm: 68,
+      externalDiameterMm: 18,
+      externalLengthMm: 89,
+      weightInAirGrams: 24,
+      weightInWaterGrams: 10.3,
+      batteryDays: 3650,
+      sensors: [],
+      outputClass: "high",
+      outputDb: "152 / 158",
+      attachmentTypes: ["internal", "external"],
+      visualWidth: 86
+    }),
+    tag({
+      id: "v16tp",
+      educationalName: { en: "Large external sensor tag", de: "Großer externer Sensorsender" },
+      referenceModel: "V16TP-4x",
+      diameterMm: 16,
+      lengthMm: 71,
+      externalDiameterMm: 18,
+      externalLengthMm: 92,
+      weightInAirGrams: 26,
+      weightInWaterGrams: 12,
+      batteryDays: 3650,
+      sensors: ["temperature", "depth"],
+      outputClass: "high",
+      outputDb: "152 / 158",
+      attachmentTypes: ["internal", "external"],
+      visualWidth: 90
+    })
+  ]);
+
+  function tag(data) {
+    return Object.freeze({
+      frequencyKhz: 69,
+      sourceIds: ["innovasea69", "innovaseaTags"],
+      ...data
+    });
+  }
+
+  const STUDY_REQUIREMENTS = Object.freeze({
+    shortPresence: requirement({
+      id: "shortPresence",
+      title: { en: "Short seasonal presence study", de: "Kurze saisonale Anwesenheitsstudie" },
+      summary: { en: "Track presence for about three months with low output.", de: "Anwesenheit etwa drei Monate lang mit niedriger Sendeleistung erfassen." },
+      minimumBatteryDays: 90,
+      requiredSensors: [],
+      attachmentType: "internal",
+      outputClass: "low"
+    }),
+    temperatureSeason: requirement({
+      id: "temperatureSeason",
+      title: { en: "Seasonal temperature study", de: "Saisonale Temperaturstudie" },
+      summary: { en: "Record temperature for roughly six months.", de: "Temperatur ungefähr sechs Monate lang erfassen." },
+      minimumBatteryDays: 200,
+      requiredSensors: ["temperature"],
+      attachmentType: "internal",
+      outputClass: "low"
+    }),
+    migrationYear: requirement({
+      id: "migrationYear",
+      title: { en: "One-year migration study", de: "Einjährige Wanderstudie" },
+      summary: { en: "Follow broad movement for at least 600 days at standard output.", de: "Großräumige Bewegungen mindestens 600 Tage lang mit Standardleistung verfolgen." },
+      minimumBatteryDays: 600,
+      requiredSensors: [],
+      attachmentType: "internal",
+      outputClass: "standard"
+    }),
+    depthYear: requirement({
+      id: "depthYear",
+      title: { en: "Depth-use study", de: "Studie zur Tiefennutzung" },
+      summary: { en: "Measure depth for at least 500 days at standard output.", de: "Tiefe mindestens 500 Tage lang mit Standardleistung messen." },
+      minimumBatteryDays: 500,
+      requiredSensors: ["depth"],
+      attachmentType: "internal",
+      outputClass: "standard"
+    }),
+    longMigration: requirement({
+      id: "longMigration",
+      title: { en: "Multi-year migration study", de: "Mehrjährige Wanderstudie" },
+      summary: { en: "Track movement for at least 1,000 days.", de: "Bewegungen mindestens 1.000 Tage lang verfolgen." },
+      minimumBatteryDays: 1000,
+      requiredSensors: [],
+      attachmentType: "internal",
+      outputClass: "standard"
+    }),
+    longTemperature: requirement({
+      id: "longTemperature",
+      title: { en: "Long temperature study", de: "Langzeit-Temperaturstudie" },
+      summary: { en: "Measure temperature for at least 1,200 days.", de: "Temperatur mindestens 1.200 Tage lang messen." },
+      minimumBatteryDays: 1200,
+      requiredSensors: ["temperature"],
+      attachmentType: "internal",
+      outputClass: "standard"
+    }),
+    externalLong: requirement({
+      id: "externalLong",
+      title: { en: "Long external movement study", de: "Langzeitstudie mit externer Befestigung" },
+      summary: { en: "Use an external high-output tag for at least 1,500 days.", de: "Einen externen Hochleistungssender mindestens 1.500 Tage lang verwenden." },
+      minimumBatteryDays: 1500,
+      requiredSensors: [],
+      attachmentType: "external",
+      outputClass: "high"
+    }),
+    externalDepth: requirement({
+      id: "externalDepth",
+      title: { en: "External depth-use study", de: "Externe Studie zur Tiefennutzung" },
+      summary: { en: "Use an external high-output depth tag for at least 1,000 days.", de: "Einen externen Tiefensender mit hoher Leistung mindestens 1.000 Tage lang verwenden." },
+      minimumBatteryDays: 1000,
+      requiredSensors: ["depth"],
+      attachmentType: "external",
+      outputClass: "high"
+    })
+  });
+
+  function requirement(data) {
+    return Object.freeze({ environment: "marine", ...data });
+  }
+
+  const FISH_CARDS = Object.freeze([
+    fish({
+      id: "herring-rose",
+      individualName: "Rose",
+      commonName: { en: "Atlantic herring", de: "Atlantischer Hering" },
+      scientificName: "Clupea harengus",
+      taxonomicGroup: "teleost",
+      lengthCm: 12.5,
+      lengthType: "total",
+      weightGrams: 18,
+      lifeStage: "juvenile",
+      habitatSummary: { en: "Coastal nursery waters", de: "Küstennahe Aufwuchsgebiete" },
+      behaviorSummary: { en: "Schools closely with other young herring.", de: "Schwimmt eng mit anderen jungen Heringen im Schwarm." },
+      visualKey: "herring",
+      illustrationAltText: { en: "Slender silver herring with a blue-green back and forked tail", de: "Schlanker silbriger Hering mit blaugrünem Rücken und gegabelter Schwanzflosse" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 6.3,
+      anatomicalTagLengthLimitMm: 15,
+      studyRequirementId: "shortPresence",
+      sourceIds: ["herring", "innovasea69", "jepsen2005"],
+      difficultyRank: 1
+    }),
+    fish({
+      id: "herring-henk",
+      individualName: "Henk",
+      commonName: { en: "Atlantic herring", de: "Atlantischer Hering" },
+      scientificName: "Clupea harengus",
+      taxonomicGroup: "teleost",
+      lengthCm: 27,
+      lengthType: "total",
+      weightGrams: 120,
+      lifeStage: "adult",
+      habitatSummary: { en: "Open coastal water", de: "Offenes Küstenwasser" },
+      behaviorSummary: { en: "Moves between feeding and spawning grounds in schools.", de: "Zieht in Schwärmen zwischen Nahrungs- und Laichgebieten." },
+      visualKey: "herring",
+      illustrationAltText: { en: "Adult Atlantic herring with silvery compressed body and forked tail", de: "Erwachsener Atlantischer Hering mit silbrig abgeflachtem Körper und gegabelter Schwanzflosse" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 6.3,
+      anatomicalTagLengthLimitMm: 14,
+      studyRequirementId: "shortPresence",
+      sourceIds: ["herring", "innovasea69", "jepsen2005"],
+      difficultyRank: 1
+    }),
+    fish({
+      id: "sprat-noor",
+      individualName: "Noor",
+      commonName: { en: "European sprat", de: "Europäische Sprotte" },
+      scientificName: "Sprattus sprattus",
+      taxonomicGroup: "teleost",
+      lengthCm: 9.5,
+      lengthType: "total",
+      weightGrams: 12,
+      lifeStage: "juvenile",
+      habitatSummary: { en: "Shallow coastal water", de: "Flaches Küstenwasser" },
+      behaviorSummary: { en: "Forms dense schools and feeds on plankton.", de: "Bildet dichte Schwärme und frisst Plankton." },
+      visualKey: "sprat",
+      illustrationAltText: { en: "Small silver sprat with a narrow body and sharply forked tail", de: "Kleine silbrige Sprotte mit schmalem Körper und stark gegabelter Schwanzflosse" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 6,
+      anatomicalTagLengthLimitMm: 13,
+      studyRequirementId: "shortPresence",
+      sourceIds: ["sprat", "innovasea69", "jepsen2005"],
+      difficultyRank: 1
+    }),
+    fish({
+      id: "mackerel-marta",
+      individualName: "Marta",
+      commonName: { en: "Atlantic mackerel", de: "Atlantische Makrele" },
+      scientificName: "Scomber scombrus",
+      taxonomicGroup: "teleost",
+      lengthCm: 38,
+      lengthType: "fork",
+      weightGrams: 900,
+      lifeStage: "adult",
+      habitatSummary: { en: "Open shelf water", de: "Offenes Schelfwasser" },
+      behaviorSummary: { en: "A fast schooling swimmer that follows seasonal food.", de: "Eine schnelle Schwarmfischart, die saisonaler Nahrung folgt." },
+      visualKey: "mackerel",
+      illustrationAltText: { en: "Streamlined Atlantic mackerel with dark wavy dorsal markings and small finlets", de: "Stromlinienförmige Atlantische Makrele mit dunklen Wellenlinien am Rücken und kleinen Flösselchen" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 7,
+      anatomicalTagLengthLimitMm: 22,
+      studyRequirementId: "temperatureSeason",
+      sourceIds: ["mackerel", "innovasea69", "jepsen2005"],
+      difficultyRank: 1
+    }),
+    fish({
+      id: "cod-sam",
+      individualName: "Sam",
+      commonName: { en: "Atlantic cod", de: "Atlantischer Kabeljau" },
+      scientificName: "Gadus morhua",
+      taxonomicGroup: "teleost",
+      lengthCm: 55,
+      lengthType: "total",
+      weightGrams: 1800,
+      lifeStage: "subadult",
+      habitatSummary: { en: "Rocky and mixed seabeds", de: "Felsige und gemischte Meeresböden" },
+      behaviorSummary: { en: "Moves between seabed habitats and the water column.", de: "Wechselt zwischen Bodenhabitaten und der Wassersäule." },
+      visualKey: "cod",
+      illustrationAltText: { en: "Heavy-bodied Atlantic cod with three dorsal fins, pale lateral line and chin barbel", de: "Kräftiger Atlantischer Kabeljau mit drei Rückenflossen, heller Seitenlinie und Kinnfaden" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 10,
+      anatomicalTagLengthLimitMm: 33,
+      studyRequirementId: "depthYear",
+      sourceIds: ["cod", "innovasea69", "jepsen2005"],
+      difficultyRank: 1
+    }),
+    fish({
+      id: "cod-peter",
+      individualName: "Peter",
+      commonName: { en: "Atlantic cod", de: "Atlantischer Kabeljau" },
+      scientificName: "Gadus morhua",
+      taxonomicGroup: "teleost",
+      lengthCm: 88,
+      lengthType: "total",
+      weightGrams: 6500,
+      lifeStage: "adult",
+      habitatSummary: { en: "Cold offshore shelf water", de: "Kaltes küstenfernes Schelfwasser" },
+      behaviorSummary: { en: "Migrates among feeding, spawning and overwintering areas.", de: "Wandert zwischen Nahrungs-, Laich- und Überwinterungsgebieten." },
+      visualKey: "cod",
+      illustrationAltText: { en: "Large Atlantic cod with mottled body, three dorsal fins and chin barbel", de: "Großer Atlantischer Kabeljau mit geflecktem Körper, drei Rückenflossen und Kinnfaden" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 14,
+      anatomicalTagLengthLimitMm: 45,
+      studyRequirementId: "longTemperature",
+      sourceIds: ["cod", "innovasea69", "jepsen2005"],
+      difficultyRank: 3
+    }),
+    fish({
+      id: "haddock-lina",
+      individualName: "Lina",
+      commonName: { en: "Haddock", de: "Schellfisch" },
+      scientificName: "Melanogrammus aeglefinus",
+      taxonomicGroup: "teleost",
+      lengthCm: 58,
+      lengthType: "total",
+      weightGrams: 2400,
+      lifeStage: "adult",
+      habitatSummary: { en: "Continental shelf near the seabed", de: "Kontinentalschelf nahe dem Meeresboden" },
+      behaviorSummary: { en: "Feeds on seabed invertebrates and small fishes.", de: "Frisst bodenlebende Wirbellose und kleine Fische." },
+      visualKey: "haddock",
+      illustrationAltText: { en: "Haddock with three dorsal fins, dark lateral line and black shoulder spot", de: "Schellfisch mit drei Rückenflossen, dunkler Seitenlinie und schwarzem Schulterfleck" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 10,
+      anatomicalTagLengthLimitMm: 30,
+      studyRequirementId: "migrationYear",
+      sourceIds: ["haddock", "innovasea69", "jepsen2005"],
+      difficultyRank: 2
+    }),
+    fish({
+      id: "plaice-raya",
+      individualName: "Raya",
+      commonName: { en: "European plaice", de: "Europäische Scholle" },
+      scientificName: "Pleuronectes platessa",
+      taxonomicGroup: "teleost",
+      lengthCm: 42,
+      lengthType: "total",
+      weightGrams: 1100,
+      lifeStage: "adult",
+      habitatSummary: { en: "Sandy and muddy seabeds", de: "Sandige und schlammige Meeresböden" },
+      behaviorSummary: { en: "Rests flat on sediment and moves to feed.", de: "Ruht flach auf dem Sediment und zieht zur Nahrungssuche umher." },
+      visualKey: "plaice",
+      illustrationAltText: { en: "Flat oval European plaice with both eyes on one side and orange spots", de: "Flach-ovale Europäische Scholle mit beiden Augen auf einer Seite und orangefarbenen Punkten" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 7,
+      anatomicalTagLengthLimitMm: 23,
+      studyRequirementId: "temperatureSeason",
+      sourceIds: ["plaice", "innovasea69", "jepsen2005"],
+      difficultyRank: 2
+    }),
+    fish({
+      id: "salmon-finn",
+      individualName: "Finn",
+      commonName: { en: "Atlantic salmon", de: "Atlantischer Lachs" },
+      scientificName: "Salmo salar",
+      taxonomicGroup: "teleost",
+      lengthCm: 17.5,
+      lengthType: "fork",
+      weightGrams: 80,
+      lifeStage: "juvenile",
+      habitatSummary: { en: "River during seaward migration", de: "Fluss während der Abwanderung zum Meer" },
+      behaviorSummary: { en: "A smolt preparing to move from freshwater to sea.", de: "Ein Smolt auf dem Weg vom Süßwasser ins Meer." },
+      visualKey: "salmon",
+      illustrationAltText: { en: "Slender silver Atlantic salmon smolt with small dark spots and adipose fin", de: "Schlanker silbriger Atlantischer Lachssmolt mit kleinen dunklen Flecken und Fettflosse" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 6.3,
+      anatomicalTagLengthLimitMm: 14,
+      studyRequirementId: "shortPresence",
+      sourceIds: ["salmon", "innovasea69", "jepsen2005"],
+      difficultyRank: 1
+    }),
+    fish({
+      id: "salmon-ada",
+      individualName: "Ada",
+      commonName: { en: "Atlantic salmon", de: "Atlantischer Lachs" },
+      scientificName: "Salmo salar",
+      taxonomicGroup: "teleost",
+      lengthCm: 72,
+      lengthType: "fork",
+      weightGrams: 4200,
+      lifeStage: "adult",
+      habitatSummary: { en: "River and North Atlantic migration route", de: "Fluss und Wanderroute im Nordatlantik" },
+      behaviorSummary: { en: "Moves between marine feeding areas and natal rivers.", de: "Wandert zwischen marinen Nahrungsgebieten und dem Heimatfluss." },
+      visualKey: "salmon",
+      illustrationAltText: { en: "Adult Atlantic salmon with streamlined silver body, dark spots and adipose fin", de: "Erwachsener Atlantischer Lachs mit stromlinienförmigem silbrigem Körper, dunklen Flecken und Fettflosse" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 10,
+      anatomicalTagLengthLimitMm: 32,
+      studyRequirementId: "depthYear",
+      sourceIds: ["salmon", "innovasea69", "jepsen2005"],
+      difficultyRank: 2
+    }),
+    fish({
+      id: "eel-elsa",
+      individualName: "Elsa",
+      commonName: { en: "European eel", de: "Europäischer Aal" },
+      scientificName: "Anguilla anguilla",
+      taxonomicGroup: "teleost",
+      lengthCm: 68,
+      lengthType: "total",
+      weightGrams: 900,
+      lifeStage: "adult",
+      habitatSummary: { en: "Rivers, estuaries and coastal water", de: "Flüsse, Ästuare und Küstengewässer" },
+      behaviorSummary: { en: "An elongated migrant that often travels at night.", de: "Ein langgestreckter Wanderfisch, der häufig nachts unterwegs ist." },
+      visualKey: "eel",
+      illustrationAltText: { en: "Long snake-like European eel with continuous dorsal and anal fin", de: "Langer schlangenförmiger Europäischer Aal mit durchgehender Rücken- und Afterflosse" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 7,
+      anatomicalTagLengthLimitMm: 22,
+      studyRequirementId: "temperatureSeason",
+      sourceIds: ["eel", "innovasea69", "jepsen2005"],
+      difficultyRank: 2
+    }),
+    fish({
+      id: "seabass-leo",
+      individualName: "Leo",
+      commonName: { en: "European sea bass", de: "Europäischer Wolfsbarsch" },
+      scientificName: "Dicentrarchus labrax",
+      taxonomicGroup: "teleost",
+      lengthCm: 55,
+      lengthType: "total",
+      weightGrams: 2200,
+      lifeStage: "adult",
+      habitatSummary: { en: "Estuaries and coastal shelf water", de: "Ästuare und küstennahes Schelfwasser" },
+      behaviorSummary: { en: "Moves between coastal habitats and feeding areas.", de: "Wechselt zwischen Küstenhabitaten und Nahrungsgebieten." },
+      visualKey: "seabass",
+      illustrationAltText: { en: "European sea bass with streamlined silver body and two separate dorsal fins", de: "Europäischer Wolfsbarsch mit stromlinienförmigem silbrigem Körper und zwei getrennten Rückenflossen" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 10,
+      anatomicalTagLengthLimitMm: 30,
+      studyRequirementId: "migrationYear",
+      sourceIds: ["seabass", "innovasea69", "jepsen2005"],
+      difficultyRank: 2
+    }),
+    fish({
+      id: "dogfish-otto",
+      individualName: "Otto",
+      commonName: { en: "Spiny dogfish", de: "Dornhai" },
+      scientificName: "Squalus acanthias",
+      taxonomicGroup: "shark",
+      lengthCm: 95,
+      lengthType: "total",
+      weightGrams: 6500,
+      lifeStage: "adult",
+      habitatSummary: { en: "Shelf water near the seabed", de: "Schelfwasser nahe dem Meeresboden" },
+      behaviorSummary: { en: "Often travels in groups and makes seasonal movements.", de: "Zieht häufig in Gruppen und unternimmt saisonale Wanderungen." },
+      visualKey: "dogfish",
+      illustrationAltText: { en: "Small shark with pointed snout, two dorsal fins with spines and heterocercal tail", de: "Kleiner Hai mit spitzer Schnauze, zwei bedornten Rückenflossen und heterocerker Schwanzflosse" },
+      allowedAttachmentTypes: ["external"],
+      anatomicalTagDiameterLimitMm: 18,
+      anatomicalTagLengthLimitMm: 95,
+      minimumExternalFishWeightGrams: 5000,
+      studyRequirementId: "externalLong",
+      sourceIds: ["dogfish", "innovasea69", "externalAttachment2022"],
+      difficultyRank: 3
+    }),
+    fish({
+      id: "catshark-kiki",
+      individualName: "Kiki",
+      commonName: { en: "Small-spotted catshark", de: "Kleingefleckter Katzenhai" },
+      scientificName: "Scyliorhinus canicula",
+      taxonomicGroup: "shark",
+      lengthCm: 42,
+      lengthType: "total",
+      weightGrams: 700,
+      lifeStage: "juvenile",
+      habitatSummary: { en: "Rocky and sandy coastal seabed", de: "Felsiger und sandiger Küstenboden" },
+      behaviorSummary: { en: "A small bottom-associated shark, often active at night.", de: "Ein kleiner bodennaher Hai, der häufig nachts aktiv ist." },
+      visualKey: "catshark",
+      illustrationAltText: { en: "Slender small-spotted catshark with many dark spots and a long upper tail lobe", de: "Schlanker kleingefleckter Katzenhai mit vielen dunklen Flecken und langem oberen Schwanzlappen" },
+      allowedAttachmentTypes: ["external"],
+      anatomicalTagDiameterLimitMm: 14,
+      anatomicalTagLengthLimitMm: 60,
+      minimumExternalFishWeightGrams: 5000,
+      studyRequirementId: "externalLong",
+      sourceIds: ["catshark", "innovasea69", "externalAttachment2022"],
+      difficultyRank: 3
+    }),
+    fish({
+      id: "tope-tara",
+      individualName: "Tara",
+      commonName: { en: "Tope shark", de: "Hundshai" },
+      scientificName: "Galeorhinus galeus",
+      taxonomicGroup: "shark",
+      lengthCm: 145,
+      lengthType: "total",
+      weightGrams: 18000,
+      lifeStage: "adult",
+      habitatSummary: { en: "Coastal and offshore shelf water", de: "Küsten- und küstenfernes Schelfwasser" },
+      behaviorSummary: { en: "A highly mobile shark capable of long migrations.", de: "Ein sehr mobiler Hai mit langen Wanderungen." },
+      visualKey: "tope",
+      illustrationAltText: { en: "Long streamlined tope shark with pointed snout and large heterocercal tail", de: "Langer stromlinienförmiger Hundshai mit spitzer Schnauze und großer heterocerker Schwanzflosse" },
+      allowedAttachmentTypes: ["external"],
+      anatomicalTagDiameterLimitMm: 20,
+      anatomicalTagLengthLimitMm: 110,
+      minimumExternalFishWeightGrams: 5000,
+      studyRequirementId: "externalLong",
+      sourceIds: ["tope", "innovasea69", "externalAttachment2022"],
+      difficultyRank: 3
+    }),
+    fish({
+      id: "thornback-mira",
+      individualName: "Mira",
+      commonName: { en: "Thornback ray", de: "Nagelrochen" },
+      scientificName: "Raja clavata",
+      taxonomicGroup: "ray",
+      lengthCm: 85,
+      lengthType: "disc-width",
+      weightGrams: 9000,
+      lifeStage: "adult",
+      habitatSummary: { en: "Sandy, muddy and gravel seabeds", de: "Sandige, schlammige und kiesige Meeresböden" },
+      behaviorSummary: { en: "Rests on sediment and moves across the seabed to feed.", de: "Ruht auf Sediment und bewegt sich zur Nahrungssuche über den Boden." },
+      visualKey: "thornback",
+      illustrationAltText: { en: "Broad diamond-shaped thornback ray viewed from above with dorsal eyes and a thorny tail", de: "Breiter rautenförmiger Nagelrochen von oben mit dorsalen Augen und dornigem Schwanz" },
+      allowedAttachmentTypes: ["external"],
+      anatomicalTagDiameterLimitMm: 20,
+      anatomicalTagLengthLimitMm: 110,
+      minimumExternalFishWeightGrams: 5000,
+      studyRequirementId: "externalDepth",
+      sourceIds: ["thornback", "innovasea69", "externalAttachment2022"],
+      difficultyRank: 3
+    }),
+    fish({
+      id: "spotted-ray-ina",
+      individualName: "Ina",
+      commonName: { en: "Spotted ray", de: "Fleckenrochen" },
+      scientificName: "Raja montagui",
+      taxonomicGroup: "ray",
+      lengthCm: 65,
+      lengthType: "disc-width",
+      weightGrams: 6000,
+      lifeStage: "subadult",
+      habitatSummary: { en: "Sandy shelf seabed", de: "Sandiger Schelfboden" },
+      behaviorSummary: { en: "A flattened bottom-dweller that can partly bury in sediment.", de: "Ein abgeflachter Bodenbewohner, der sich teilweise im Sediment eingraben kann." },
+      visualKey: "spotted-ray",
+      illustrationAltText: { en: "Rounded diamond-shaped spotted ray with dorsal eyes, pale spots and a slender tail", de: "Rundlich-rautenförmiger Fleckenrochen mit dorsalen Augen, hellen Flecken und schlankem Schwanz" },
+      allowedAttachmentTypes: ["external"],
+      anatomicalTagDiameterLimitMm: 20,
+      anatomicalTagLengthLimitMm: 105,
+      minimumExternalFishWeightGrams: 5000,
+      studyRequirementId: "externalDepth",
+      sourceIds: ["spottedRay", "innovasea69", "externalAttachment2022"],
+      difficultyRank: 3
+    }),
+    fish({
+      id: "pollack-jonas",
+      individualName: "Jonas",
+      commonName: { en: "Pollack", de: "Pollack" },
+      scientificName: "Pollachius pollachius",
+      taxonomicGroup: "teleost",
+      lengthCm: 75,
+      lengthType: "total",
+      weightGrams: 3500,
+      lifeStage: "adult",
+      habitatSummary: { en: "Rocky reefs and coastal shelf water", de: "Felsriffe und küstennahes Schelfwasser" },
+      behaviorSummary: { en: "Cruises around rocky structures and kelp edges.", de: "Zieht an Felsstrukturen und Kanten von Tangwäldern entlang." },
+      visualKey: "pollack",
+      illustrationAltText: { en: "Elongated pollack with three dorsal fins, projecting lower jaw and curved lateral line", de: "Langgestreckter Pollack mit drei Rückenflossen, vorstehendem Unterkiefer und gebogener Seitenlinie" },
+      allowedAttachmentTypes: ["internal"],
+      anatomicalTagDiameterLimitMm: 14,
+      anatomicalTagLengthLimitMm: 40,
+      studyRequirementId: "longMigration",
+      sourceIds: ["pollack", "innovasea69", "jepsen2005"],
+      difficultyRank: 3
+    })
+  ]);
+
+  function fish(data) {
+    return Object.freeze({ maxTagBurdenPercent: DEFAULT_MAX_TAG_BURDEN_PERCENT, ...data });
+  }
+
+  const DIFFICULTY_SETTINGS = Object.freeze({
+    easy: Object.freeze({
+      directMatchFishCount: 4,
+      memoryPairCount: 4,
+      fishPoolIds: ["herring-rose", "herring-henk", "mackerel-marta", "cod-sam", "plaice-raya", "salmon-finn"],
+      mandatoryFishIds: ["herring-rose"],
+      tagIds: ["v6", "v7tp", "v9tp"],
+      showBurdenCalculation: true,
+      showAttachmentHint: true,
+      showStudyRequirementHints: true,
+      memoryPreviewSeconds: 5
+    }),
+    medium: Object.freeze({
+      directMatchFishCount: 6,
+      memoryPairCount: 6,
+      fishPoolIds: [
+        "herring-rose", "herring-henk", "sprat-noor", "mackerel-marta", "cod-sam", "haddock-lina",
+        "plaice-raya", "salmon-finn", "salmon-ada", "eel-elsa", "seabass-leo", "pollack-jonas"
+      ],
+      mandatoryFishIds: ["sprat-noor", "pollack-jonas"],
+      tagIds: ["v6", "v7tp", "v9", "v9tp", "v13"],
+      showBurdenCalculation: false,
+      showAttachmentHint: true,
+      showStudyRequirementHints: true,
+      memoryPreviewSeconds: 3
+    }),
+    hard: Object.freeze({
+      directMatchFishCount: 10,
+      memoryPairCount: 10,
+      fishPoolIds: FISH_CARDS.map((item) => item.id),
+      mandatoryFishIds: ["catshark-kiki", "thornback-mira", "cod-peter"],
+      tagIds: TAG_CATALOGUE.map((item) => item.id),
+      showBurdenCalculation: false,
+      showAttachmentHint: false,
+      showStudyRequirementHints: false,
+      memoryPreviewSeconds: 0
+    })
+  });
+
+  const VISUAL_REFERENCE_CHECKLIST = Object.freeze([
+    { key: "herring", species: "Atlantic herring", traits: "deep silvery body, blue-green back, single dorsal fin, forked tail" },
+    { key: "sprat", species: "European sprat", traits: "small narrow clupeid body, silver sides, sharply forked tail" },
+    { key: "mackerel", species: "Atlantic mackerel", traits: "streamlined body, wavy dark dorsal bands, deeply forked tail, finlets" },
+    { key: "cod", species: "Atlantic cod", traits: "heavy body, three dorsal fins, pale lateral line, chin barbel" },
+    { key: "haddock", species: "Haddock", traits: "three dorsal fins, dark lateral line, black shoulder spot" },
+    { key: "plaice", species: "European plaice", traits: "flat oval body, both eyes on upper side, orange spots" },
+    { key: "salmon", species: "Atlantic salmon", traits: "streamlined body, adipose fin, narrow caudal wrist, dark spots" },
+    { key: "eel", species: "European eel", traits: "very elongated body, continuous median fins, small pectoral fins" },
+    { key: "seabass", species: "European sea bass", traits: "silver fusiform body, two distinct dorsal fins, large mouth" },
+    { key: "dogfish", species: "Spiny dogfish", traits: "small shark, dorsal spines, no anal fin, heterocercal tail" },
+    { key: "catshark", species: "Small-spotted catshark", traits: "slender spotted shark, rear-set dorsal fins, long upper tail lobe" },
+    { key: "tope", species: "Tope shark", traits: "long streamlined shark, pointed snout, large heterocercal tail" },
+    { key: "thornback", species: "Thornback ray", traits: "broad angular disc, dorsal eyes, thorn row and long tail" },
+    { key: "spotted-ray", species: "Spotted ray", traits: "rounded diamond disc, dorsal eyes, pale spots, slender tail" },
+    { key: "pollack", species: "Pollack", traits: "elongated gadid, three dorsal fins, projecting lower jaw, curved lateral line" }
+  ]);
+
+  global.GameData = Object.freeze({
+    ACCESSED_DATE,
+    DEFAULT_MAX_TAG_BURDEN_PERCENT,
+    SCIENCE_SOURCES,
+    TAG_CATALOGUE,
+    STUDY_REQUIREMENTS,
+    FISH_CARDS,
+    DIFFICULTY_SETTINGS,
+    VISUAL_REFERENCE_CHECKLIST,
+    TOO_SMALL_ID: "too-small"
+  });
+})(globalThis);
+
+
+================================================================================
+FILE: illustrations.js
+================================================================================
+
+"use strict";
+
+(function exposeIllustrations(global) {
+  let renderSerial = 0;
+
+  const palettes = Object.freeze({
+    herring: ["#5d8792", "#d9e6e5", "#f8f1dc", "#789ba4"],
+    sprat: ["#547b87", "#cfdddc", "#f4ecd8", "#718f97"],
+    mackerel: ["#1f5664", "#76aeb5", "#e8efe6", "#4f8289"],
+    cod: ["#5c604b", "#a59b72", "#e6d8b6", "#7f8064"],
+    haddock: ["#4f6669", "#b8c8c5", "#eff1e5", "#81999a"],
+    plaice: ["#6c563d", "#a88b5d", "#d6bc87", "#8b704c"],
+    salmon: ["#3f6f76", "#b8d0cc", "#f2e6d0", "#7f9fa0"],
+    eel: ["#424a32", "#79805a", "#b3aa76", "#5e6848"],
+    seabass: ["#526d73", "#c2d2d0", "#eff0df", "#7f989b"],
+    dogfish: ["#506c72", "#9bb0b0", "#e8e7d8", "#718c90"],
+    catshark: ["#655d4c", "#a79b7d", "#ddd2b8", "#847960"],
+    tope: ["#506a70", "#94a9aa", "#e5e6dc", "#70878a"],
+    thornback: ["#65503f", "#a68262", "#d7c09a", "#80664f"],
+    spottedRay: ["#6b5b46", "#ae9472", "#dac7a4", "#88745a"],
+    pollack: ["#425e5b", "#93a49a", "#d9d9bd", "#6e8178"]
+  });
+
+  function renderFishIllustration(visualKey) {
+    const builder = drawings[visualKey] || drawings.herring;
+    return builder();
+  }
+
+  function makeSvg(key, viewBox, palette, contentBuilder) {
+    renderSerial += 1;
+    const prefix = `fish-${key}-${renderSerial}`;
+    const ids = {
+      body: `${prefix}-body`,
+      fin: `${prefix}-fin`,
+      pale: `${prefix}-pale`,
+      water: `${prefix}-water`,
+      shadow: `${prefix}-shadow`
+    };
+    const [dark, mid, light, fin] = palette;
+    const content = contentBuilder(ids);
+    return `<svg class="species-svg species-svg--${key}" viewBox="${viewBox}" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="${ids.body}" x1="0" y1="0" x2="0.18" y2="1">
+          <stop offset="0" stop-color="${dark}"/>
+          <stop offset="0.42" stop-color="${mid}"/>
+          <stop offset="0.78" stop-color="${light}"/>
+          <stop offset="1" stop-color="${mid}"/>
+        </linearGradient>
+        <linearGradient id="${ids.fin}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${fin}" stop-opacity="0.95"/>
+          <stop offset="1" stop-color="${dark}" stop-opacity="0.62"/>
+        </linearGradient>
+        <linearGradient id="${ids.pale}" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#fffdf7" stop-opacity="0.85"/>
+          <stop offset="1" stop-color="${light}" stop-opacity="0.12"/>
+        </linearGradient>
+        <linearGradient id="${ids.water}" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#d8eff0" stop-opacity="0"/>
+          <stop offset="0.55" stop-color="#d8eff0" stop-opacity="0.65"/>
+          <stop offset="1" stop-color="#d8eff0" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="${ids.shadow}" x="-30%" y="-30%" width="160%" height="180%">
+          <feGaussianBlur stdDeviation="2.2"/>
+        </filter>
+      </defs>
+      <ellipse class="art-shadow" cx="112" cy="108" rx="78" ry="7" filter="url(#${ids.shadow})"/>
+      ${content}
+    </svg>`;
+  }
+
+  function eye(x, y, scale = 1) {
+    return `<ellipse class="art-eye-white" cx="${x}" cy="${y}" rx="${5.2 * scale}" ry="${4.5 * scale}"/>
+      <circle class="art-pupil" cx="${x + 0.9 * scale}" cy="${y + 0.4 * scale}" r="${2.45 * scale}"/>
+      <circle class="art-eye-glint" cx="${x + 1.7 * scale}" cy="${y - 0.8 * scale}" r="${0.8 * scale}"/>`;
+  }
+
+  function smallScales(rows) {
+    return rows.map(([startX, y, count, spacing]) => Array.from({ length: count }, (_, i) => {
+      const x = startX + i * spacing;
+      return `<path class="art-scale" d="M${x} ${y} q${spacing / 2} ${spacing / 2.5} ${spacing} 0"/>`;
+    }).join("")).join("");
+  }
+
+  const drawings = {
+    herring: () => makeSvg("herring", "0 0 230 128", palettes.herring, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M173 52 L218 26 L207 62 L220 98 L173 79 Q181 66 173 52 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M18 65 C35 31 91 21 146 37 C164 42 179 51 185 62 C177 76 160 87 139 94 C88 108 35 96 18 69 Q15 67 18 65 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M94 34 L111 10 L128 37 Q111 34 94 34 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M104 94 L120 115 L137 91 Q120 96 104 94 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M74 86 L82 105 L96 89 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M58 64 Q80 70 90 88 Q65 81 58 64 Z"/>
+      <path class="art-line-light" d="M39 58 C74 43 131 43 165 57"/>
+      <path class="art-line" d="M52 47 Q45 64 53 80"/>
+      <path class="art-line" d="M19 67 Q31 69 39 66"/>
+      ${smallScales([[66, 57, 8, 10], [61, 68, 9, 10], [70, 79, 7, 10]])}
+      ${eye(40, 55)}
+    `),
+
+    sprat: () => makeSvg("sprat", "0 0 230 128", palettes.sprat, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M174 55 L218 34 L205 64 L219 94 L173 76 Q179 65 174 55 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M23 66 C47 40 102 33 151 43 C170 47 184 55 190 64 C181 74 164 81 143 86 C94 96 45 87 23 70 L16 68 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M107 41 L122 19 L136 43 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M116 85 L130 103 L143 83 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M59 65 Q77 70 87 84 Q68 80 59 65 Z"/>
+      <path class="art-line-light" d="M43 59 C84 48 132 50 169 59"/>
+      <path class="art-line" d="M54 50 Q48 65 55 78"/>
+      <path class="art-line" d="M18 68 L38 70"/>
+      <g>${Array.from({length: 10}, (_, i) => `<path class="art-spine" d="M${65 + i * 8} ${84 + (i % 2)} l4 7 l4 -7 Z"/>`).join("")}</g>
+      ${eye(42, 57, 0.9)}
+    `),
+
+    mackerel: () => makeSvg("mackerel", "0 0 236 128", palettes.mackerel, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M180 48 L227 16 L211 61 L228 108 L180 79 Q190 64 180 48 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M15 65 C38 30 101 20 157 35 C179 41 194 51 200 62 C191 77 171 87 148 93 C94 107 38 95 15 69 L9 67 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M79 34 L91 7 L101 35 L111 10 L121 38 Q100 34 79 34 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M126 38 L141 17 L155 41 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M124 91 L139 111 L153 87 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M55 64 Q78 69 90 88 Q66 82 55 64 Z"/>
+      <g fill="url(#${id.fin})" stroke="#18313b" stroke-width="1.5">
+        ${Array.from({length: 5}, (_, i) => `<path d="M${151 + i * 7} ${43 + i * 1.7} l5 -9 l4 11 Z"/>`).join("")}
+        ${Array.from({length: 5}, (_, i) => `<path d="M${151 + i * 7} ${84 - i * 1.6} l5 9 l4 -11 Z"/>`).join("")}
+      </g>
+      <path class="art-line-light" d="M31 63 C76 55 129 56 181 62"/>
+      <path class="art-line-dark" d="M48 38 l10 15 l9 -17 l11 16 l10 -18 l12 17 l10 -17 l12 15 l10 -13 l12 11"/>
+      <path class="art-line" d="M45 50 Q40 65 47 78"/>
+      <path class="art-line" d="M10 67 L33 68"/>
+      ${eye(34, 55)}
+    `),
+
+    cod: () => makeSvg("cod", "0 0 236 132", palettes.cod, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M181 48 Q211 39 225 45 L215 64 L226 86 Q209 93 180 81 Q189 65 181 48 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M16 67 C31 34 82 21 143 34 C166 39 185 49 194 62 C187 79 164 92 137 99 C82 111 31 98 16 72 L8 69 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M59 37 L70 11 L89 36 Z M91 34 L106 7 L125 38 Z M128 39 L145 16 L161 44 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M91 99 L106 119 L125 96 Z M129 96 L148 116 L165 90 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M54 63 Q81 67 94 91 Q67 83 54 63 Z"/>
+      <path class="art-line-light" d="M43 57 Q102 44 174 61"/>
+      <path class="art-line" d="M48 46 Q40 66 49 84"/>
+      <path class="art-line" d="M10 69 Q28 71 37 67"/>
+      <path class="art-line" d="M34 78 Q39 91 34 103"/>
+      <g class="art-spot-dark">
+        ${[[71,51,3],[84,74,2.4],[99,43,2.6],[116,67,3],[134,49,2.5],[151,76,2.8],[65,83,2]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join("")}
+      </g>
+      ${eye(37, 54)}
+    `),
+
+    haddock: () => makeSvg("haddock", "0 0 236 132", palettes.haddock, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M181 49 Q211 39 226 47 L215 64 L226 84 Q210 92 180 80 Q188 65 181 49 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M17 67 C34 36 85 24 144 36 C168 40 187 50 195 63 C187 78 164 90 138 96 C83 107 33 96 17 71 L9 69 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M61 39 L73 10 L92 38 Z M95 36 L109 12 L126 40 Z M130 41 L147 20 L162 46 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M93 96 L108 116 L127 94 Z M131 93 L149 112 L165 88 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M55 63 Q80 68 94 89 Q68 82 55 63 Z"/>
+      <path class="art-line-dark" d="M43 57 Q107 49 177 61"/>
+      <path class="art-line" d="M48 47 Q41 66 50 82"/>
+      <path class="art-line" d="M35 77 Q39 89 35 98"/>
+      <circle class="art-spot-dark" cx="68" cy="57" r="8.5"/>
+      <path class="art-line-light" d="M83 72 C114 81 147 78 170 68"/>
+      ${eye(38, 54)}
+    `),
+
+    plaice: () => makeSvg("plaice", "0 0 236 132", palettes.plaice, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M178 49 Q211 39 226 51 L213 65 L226 81 Q208 94 177 80 Q185 65 178 49 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M31 68 C35 29 78 13 132 22 C164 27 188 43 195 62 C187 84 159 101 125 107 C75 116 36 97 31 72 L18 69 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M40 46 Q94 5 170 32 Q114 17 45 55 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M42 90 Q101 126 172 93 Q113 110 45 82 Z"/>
+      <path class="art-line" d="M63 37 Q54 61 62 91"/>
+      <path class="art-line" d="M20 69 L43 70"/>
+      <path class="art-line-light" d="M71 54 Q119 39 168 57"/>
+      ${eye(61, 49, 0.95)}${eye(73, 43, 0.9)}
+      <g>${[[91,44,5],[120,60,5],[149,46,4],[83,79,4],[132,88,4.5],[158,75,3.5],[105,95,3]].map(([x,y,r])=>`<circle class="art-spot-orange" cx="${x}" cy="${y}" r="${r}"/>`).join("")}</g>
+      <g>${[[99,69,2],[137,39,1.8],[70,68,1.8],[153,91,2]].map(([x,y,r])=>`<circle class="art-spot-dark" cx="${x}" cy="${y}" r="${r}"/>`).join("")}</g>
+    `),
+
+    salmon: () => makeSvg("salmon", "0 0 238 130", palettes.salmon, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M182 49 L226 26 L213 63 L227 101 L181 79 Q191 65 182 49 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M15 66 C37 31 96 21 151 35 C174 41 192 51 199 63 C190 78 170 88 145 95 C91 108 37 96 15 70 L8 68 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M91 35 L108 9 L125 39 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M142 44 Q151 27 159 46 Q151 41 142 44 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M117 93 L133 115 L149 89 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M71 88 L82 106 L98 89 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M56 63 Q81 69 93 89 Q67 82 56 63 Z"/>
+      <path class="art-line-light" d="M34 61 Q99 50 177 62"/>
+      <path class="art-line" d="M47 48 Q40 65 48 80"/>
+      <path class="art-line" d="M9 68 L34 69"/>
+      <g>${[[67,43],[83,48],[98,39],[111,49],[128,43],[145,51],[78,57],[118,58]].map(([x,y])=>`<circle class="art-spot-dark" cx="${x}" cy="${y}" r="2.2"/>`).join("")}</g>
+      ${eye(36, 54)}
+    `),
+
+    eel: () => makeSvg("eel", "0 0 240 132", palettes.eel, (id) => `
+      <path class="art-body" fill="url(#${id.body})" d="M13 73 C28 38 57 31 86 44 C113 56 128 75 155 77 C184 80 202 63 224 39 C213 73 188 102 154 101 C121 101 99 74 77 65 C56 56 45 68 35 84 C27 98 12 94 13 73 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M48 47 C79 19 118 37 146 59 C168 77 192 66 218 43 C197 73 177 88 153 86 C123 83 103 55 78 49 C64 46 56 49 48 47 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M44 84 C75 71 104 86 132 99 C158 111 188 93 213 65 C196 99 167 119 137 111 C104 102 77 79 44 92 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M47 72 Q68 76 78 93 Q57 87 47 72 Z"/>
+      <path class="art-line-light" d="M37 62 C76 47 103 71 133 84 C162 97 190 79 211 58"/>
+      <path class="art-line" d="M45 58 Q40 70 46 81"/>
+      <path class="art-line" d="M14 73 Q28 75 36 72"/>
+      ${eye(31, 61, 0.85)}
+    `),
+
+    seabass: () => makeSvg("seabass", "0 0 238 130", palettes.seabass, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M181 50 L224 32 L212 64 L225 96 L181 79 Q190 65 181 50 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M13 66 C33 31 91 23 151 36 C175 41 193 51 201 63 C193 78 170 89 143 96 C87 108 32 96 13 70 L6 68 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M76 37 L82 10 L89 34 L96 9 L103 35 L110 13 L119 39 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M124 40 L141 17 L158 44 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M125 92 L141 114 L157 88 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M59 63 Q84 68 98 90 Q70 83 59 63 Z"/>
+      <path class="art-line-light" d="M36 61 Q102 50 181 62"/>
+      <path class="art-line" d="M48 46 Q39 65 48 84"/>
+      <path class="art-line" d="M7 68 L36 70 Q31 64 23 62"/>
+      <path class="art-spine" d="M49 74 l-6 8 l9 -3 Z M52 78 l-4 7 l8 -3 Z"/>
+      ${eye(36, 53)}
+    `),
+
+    dogfish: () => makeSvg("dogfish", "0 0 242 132", palettes.dogfish, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M180 48 L229 14 L213 60 L231 91 L195 79 L184 99 L180 78 Q190 65 180 48 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M10 67 C35 38 96 29 154 42 C177 47 194 55 202 64 C192 76 171 85 147 91 C91 103 34 92 10 71 L3 68 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M76 42 L92 13 L109 45 Z M132 49 L145 29 L158 52 Z"/>
+      <path class="art-spine" d="M78 41 L84 18 L86 42 Z M134 48 L139 33 L141 50 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M76 76 L99 111 L121 78 Q100 84 76 76 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M130 88 L143 105 L155 86 Z"/>
+      <path class="art-line-light" d="M35 66 Q105 57 184 64"/>
+      <path class="art-line" d="M48 54 l-2 14 M54 53 l-2 15 M60 53 l-2 15 M66 54 l-2 14 M72 55 l-2 13"/>
+      <path class="art-line" d="M4 68 Q27 69 38 65"/>
+      <g>${[[58,45],[82,57],[104,44],[127,62],[151,50],[71,76],[114,78],[157,72]].map(([x,y])=>`<circle class="art-spot-light" cx="${x}" cy="${y}" r="2.5"/>`).join("")}</g>
+      ${eye(35, 55, 0.9)}
+    `),
+
+    catshark: () => makeSvg("catshark", "0 0 244 132", palettes.catshark, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M176 52 L232 27 L217 61 L235 82 L194 76 L180 101 L176 78 Q185 65 176 52 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M10 68 C38 43 98 36 151 46 C176 51 193 57 203 64 C191 75 169 83 143 88 C88 98 34 89 10 72 L3 69 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M122 49 L137 25 L151 51 Z M150 52 L162 35 L174 54 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M86 80 L105 106 L121 79 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M137 85 L149 101 L161 83 Z"/>
+      <path class="art-line-light" d="M34 67 Q105 59 184 64"/>
+      <path class="art-line" d="M49 57 l-1 12 M55 56 l-1 13 M61 56 l-1 13 M67 57 l-1 12 M73 58 l-1 11"/>
+      <path class="art-line" d="M4 69 Q26 70 37 67"/>
+      <g>${[[53,49,2],[65,67,2],[78,53,2.2],[91,75,1.8],[103,50,2],[118,66,2.3],[134,54,1.8],[148,70,2],[163,60,1.8],[72,80,1.6],[113,81,1.6]].map(([x,y,r])=>`<circle class="art-spot-dark" cx="${x}" cy="${y}" r="${r}"/>`).join("")}</g>
+      ${eye(35, 57, 0.9)}
+    `),
+
+    tope: () => makeSvg("tope", "0 0 244 132", palettes.tope, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M181 47 L232 10 L215 59 L234 99 L197 78 L184 103 L181 77 Q191 64 181 47 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M5 68 C32 34 99 27 157 41 C181 46 198 54 206 63 C196 77 173 87 148 93 C91 105 32 94 5 72 L0 69 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M82 40 L101 6 L119 44 Z M143 48 L156 29 L169 51 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M79 76 L104 112 L126 78 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M128 88 L142 108 L156 86 Z M151 84 L164 99 L176 81 Z"/>
+      <path class="art-line-light" d="M30 65 Q106 56 187 64"/>
+      <path class="art-line" d="M47 53 l-1 15 M53 52 l-1 16 M59 52 l-1 16 M65 53 l-1 15 M71 54 l-1 14"/>
+      <path class="art-line" d="M1 69 Q24 69 41 60"/>
+      ${eye(31, 53, 0.9)}
+    `),
+
+    thornback: () => makeSvg("thornback", "0 0 230 166", palettes.thornback, (id) => `
+      <path class="art-tail-stem" fill="url(#${id.fin})" d="M111 112 C116 128 117 145 111 162 C105 146 105 128 111 112 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M108 139 l-11 12 l14 -4 Z M114 139 l12 11 l-15 -3 Z"/>
+      <path class="art-disc" fill="url(#${id.body})" d="M111 13 C82 15 47 36 18 77 C46 110 79 124 111 128 C144 123 176 108 205 77 C178 39 143 17 111 13 Z"/>
+      <path class="art-line-light" d="M111 27 C87 52 62 67 31 77 M111 27 C135 52 160 67 192 77"/>
+      <path class="art-line" d="M111 36 Q104 74 111 114"/>
+      ${eye(95, 55, 0.95)}${eye(127, 55, 0.95)}
+      <ellipse class="art-line" cx="94" cy="65" rx="5" ry="2.5"/><ellipse class="art-line" cx="128" cy="65" rx="5" ry="2.5"/>
+      <g>${Array.from({length: 9}, (_, i) => `<path class="art-thorn" d="M111 ${65 + i * 6} l-4 5 l4 -1 l4 1 Z"/>`).join("")}</g>
+      <g>${[[59,70,3],[72,92,2.5],[85,45,2],[145,69,3],[158,91,2.5],[137,44,2],[91,101,2],[132,101,2]].map(([x,y,r])=>`<circle class="art-spot-dark" cx="${x}" cy="${y}" r="${r}"/>`).join("")}</g>
+      <g>${[[73,61],[151,61],[82,84],[141,84]].map(([x,y])=>`<path class="art-thorn" d="M${x} ${y} l-4 6 l4 -1 l4 1 Z"/>`).join("")}</g>
+    `),
+
+    "spotted-ray": () => makeSvg("spotted-ray", "0 0 230 166", palettes.spottedRay, (id) => `
+      <path class="art-tail-stem" fill="url(#${id.fin})" d="M111 110 C116 128 117 147 111 163 C105 146 105 128 111 110 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M107 140 l-10 10 l14 -3 Z M115 140 l11 10 l-15 -3 Z"/>
+      <path class="art-disc" fill="url(#${id.body})" d="M111 17 C80 18 47 39 24 77 C48 105 79 119 111 123 C143 119 174 105 198 77 C175 40 143 19 111 17 Z"/>
+      <path class="art-line-light" d="M111 31 C87 51 65 66 36 76 M111 31 C135 51 157 66 186 76"/>
+      <path class="art-line" d="M111 41 Q106 76 111 109"/>
+      ${eye(96, 55, 0.95)}${eye(126, 55, 0.95)}
+      <ellipse class="art-line" cx="95" cy="65" rx="5" ry="2.5"/><ellipse class="art-line" cx="127" cy="65" rx="5" ry="2.5"/>
+      <g>${[[56,69,2],[66,83,2.3],[78,56,1.8],[86,93,1.8],[145,56,1.8],[157,69,2],[149,86,2.3],[135,96,1.8],[93,77,1.6],[128,79,1.6]].map(([x,y,r])=>`<circle class="art-spot-dark" cx="${x}" cy="${y}" r="${r}"/>`).join("")}</g>
+      <g><circle class="art-spot-light" cx="72" cy="87" r="5"/><circle class="art-spot-dark" cx="72" cy="87" r="2"/><circle class="art-spot-light" cx="150" cy="87" r="5"/><circle class="art-spot-dark" cx="150" cy="87" r="2"/></g>
+      <g>${Array.from({length: 6}, (_, i) => `<path class="art-thorn" d="M111 ${77 + i * 6} l-3 4 l3 -1 l3 1 Z"/>`).join("")}</g>
+    `),
+
+    pollack: () => makeSvg("pollack", "0 0 238 132", palettes.pollack, (id) => `
+      <path class="art-tail" fill="url(#${id.fin})" d="M181 49 L224 33 L212 64 L225 96 L180 80 Q189 65 181 49 Z"/>
+      <path class="art-body" fill="url(#${id.body})" d="M11 67 C34 32 94 24 151 36 C176 41 194 51 201 63 C193 78 171 89 144 96 C88 108 32 96 11 71 L3 69 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M62 39 L75 12 L94 39 Z M97 36 L111 12 L128 40 Z M132 41 L149 19 L164 46 Z"/>
+      <path class="art-fin" fill="url(#${id.fin})" d="M95 96 L111 117 L129 94 Z M133 93 L151 112 L166 88 Z"/>
+      <path class="art-fin art-soft" fill="url(#${id.fin})" d="M55 62 Q81 67 96 88 Q69 82 55 62 Z"/>
+      <path class="art-line-dark" d="M39 56 Q78 39 114 53 Q141 66 181 61"/>
+      <path class="art-line" d="M47 46 Q40 66 49 83"/>
+      <path class="art-line" d="M4 69 L35 73 L28 65"/>
+      <path class="art-line-light" d="M71 72 Q122 84 171 69"/>
+      ${eye(36, 53)}
+    `)
+  };
+
+  global.FishIllustrations = Object.freeze({ renderFishIllustration });
+})(globalThis);
+
+
+================================================================================
+FILE: compatibility.js
+================================================================================
+
+"use strict";
+
+(function exposeTelemetryLogic(global) {
+  const { DEFAULT_MAX_TAG_BURDEN_PERCENT, STUDY_REQUIREMENTS, FISH_CARDS, TOO_SMALL_ID } = global.GameData;
+  const OUTPUT_RANK = Object.freeze({ low: 0, standard: 1, high: 2 });
+
+  function calculateTagBurdenPercent(fish, tag) {
+    if (!fish || !tag || !Number.isFinite(fish.weightGrams) || fish.weightGrams <= 0) return Number.NaN;
+    return (tag.weightInAirGrams / fish.weightGrams) * 100;
+  }
+
+  function effectiveDimensions(tag, attachmentType) {
+    if (attachmentType === "external") {
+      return {
+        diameterMm: tag.externalDiameterMm ?? tag.diameterMm,
+        lengthMm: tag.externalLengthMm ?? tag.lengthMm
+      };
+    }
+    return { diameterMm: tag.diameterMm, lengthMm: tag.lengthMm };
+  }
+
+  function evaluateTagForFish(fish, tag, requirement) {
+    const reasons = [];
+    const burdenPercent = calculateTagBurdenPercent(fish, tag);
+    const dimensions = effectiveDimensions(tag, requirement.attachmentType);
+
+    if (!tag.attachmentTypes.includes(requirement.attachmentType)) {
+      reasons.push("wrong-attachment");
+    }
+    if (!fish.allowedAttachmentTypes.includes(requirement.attachmentType)) {
+      reasons.push("fish-attachment-unsupported");
+    }
+
+    if (requirement.attachmentType === "internal") {
+      const threshold = fish.maxTagBurdenPercent ?? DEFAULT_MAX_TAG_BURDEN_PERCENT;
+      if (burdenPercent > threshold) reasons.push("too-heavy");
+    } else if (
+      Number.isFinite(fish.minimumExternalFishWeightGrams) &&
+      fish.weightGrams < fish.minimumExternalFishWeightGrams
+    ) {
+      reasons.push("external-fish-too-small");
+    }
+
+    if (
+      Number.isFinite(fish.anatomicalTagDiameterLimitMm) &&
+      dimensions.diameterMm > fish.anatomicalTagDiameterLimitMm
+    ) {
+      reasons.push("too-wide");
+    }
+    if (
+      Number.isFinite(fish.anatomicalTagLengthLimitMm) &&
+      dimensions.lengthMm > fish.anatomicalTagLengthLimitMm
+    ) {
+      reasons.push("too-long");
+    }
+    if (tag.batteryDays < requirement.minimumBatteryDays) {
+      reasons.push("battery-short");
+    }
+    for (const sensor of requirement.requiredSensors) {
+      if (!tag.sensors.includes(sensor)) reasons.push(`missing-${sensor}`);
+    }
+    if ((OUTPUT_RANK[tag.outputClass] ?? -1) < (OUTPUT_RANK[requirement.outputClass] ?? 0)) {
+      reasons.push("output-low");
+    }
+
+    return Object.freeze({
+      valid: reasons.length === 0,
+      reasons: Object.freeze(reasons),
+      burdenPercent,
+      dimensions
+    });
+  }
+
+  function selectBestTag(fish, tags, requirement) {
+    const evaluated = tags.map((tag) => ({ tag, evaluation: evaluateTagForFish(fish, tag, requirement) }));
+    const valid = evaluated
+      .filter((candidate) => candidate.evaluation.valid)
+      .sort((a, b) =>
+        a.tag.weightInAirGrams - b.tag.weightInAirGrams ||
+        a.evaluation.dimensions.diameterMm - b.evaluation.dimensions.diameterMm ||
+        a.evaluation.dimensions.lengthMm - b.evaluation.dimensions.lengthMm ||
+        a.tag.batteryDays - b.tag.batteryDays
+      );
+
+    if (valid.length === 0) {
+      return Object.freeze({
+        id: TOO_SMALL_ID,
+        type: "too-small",
+        tag: null,
+        evaluation: null,
+        candidates: Object.freeze(evaluated)
+      });
+    }
+
+    return Object.freeze({
+      id: valid[0].tag.id,
+      type: "tag",
+      tag: valid[0].tag,
+      evaluation: valid[0].evaluation,
+      candidates: Object.freeze(evaluated)
+    });
+  }
+
+  function getStudyRequirement(fish) {
+    return STUDY_REQUIREMENTS[fish.studyRequirementId];
+  }
+
+  function getCorrectChoice(fish, tags) {
+    return selectBestTag(fish, tags, getStudyRequirement(fish));
+  }
+
+  function createSeededRandom(seed = Date.now()) {
+    let state = normalizeSeed(seed);
+    return function random() {
+      state += 0x6D2B79F5;
+      let value = state;
+      value = Math.imul(value ^ (value >>> 15), value | 1);
+      value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+      return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function normalizeSeed(seed) {
+    if (Number.isFinite(seed)) return Number(seed) >>> 0;
+    return String(seed).split("").reduce((accumulator, character) => {
+      return Math.imul(accumulator ^ character.charCodeAt(0), 16777619) >>> 0;
+    }, 2166136261);
+  }
+
+  function shuffle(items, random = Math.random) {
+    const copy = [...items];
+    for (let index = copy.length - 1; index > 0; index -= 1) {
+      const target = Math.floor(random() * (index + 1));
+      [copy[index], copy[target]] = [copy[target], copy[index]];
+    }
+    return copy;
+  }
+
+  function generateFishSet(config, mode, random = Math.random) {
+    const count = mode === "memory" ? config.memoryPairCount : config.directMatchFishCount;
+    const fishById = new Map(FISH_CARDS.map((fish) => [fish.id, fish]));
+    const mandatory = config.mandatoryFishIds.map((id) => fishById.get(id)).filter(Boolean);
+    const mandatoryIds = new Set(mandatory.map((fish) => fish.id));
+    const candidates = shuffle(
+      config.fishPoolIds.map((id) => fishById.get(id)).filter((fish) => fish && !mandatoryIds.has(fish.id)),
+      random
+    );
+    const result = [...mandatory, ...candidates.slice(0, Math.max(0, count - mandatory.length))];
+    return shuffle(result, random).slice(0, count);
+  }
+
+  function createMemoryCards(fishCards, tags, random = Math.random) {
+    const fishEntries = fishCards.map((fish) => ({
+      id: `fish-${fish.id}`,
+      type: "fish",
+      fishId: fish.id
+    }));
+
+    const choiceCounts = new Map();
+    const tagEntries = fishCards.map((fish) => {
+      const choice = getCorrectChoice(fish, tags);
+      const sequence = (choiceCounts.get(choice.id) || 0) + 1;
+      choiceCounts.set(choice.id, sequence);
+      return {
+        id: `tag-${choice.id}-${sequence}`,
+        type: "tag",
+        choiceId: choice.id
+      };
+    });
+
+    return shuffle([...fishEntries, ...tagEntries], random);
+  }
+
+  function cardsFormScientificMatch(firstCard, secondCard, fishCards, tags) {
+    if (!firstCard || !secondCard || firstCard.type === secondCard.type) return false;
+    const fishCard = firstCard.type === "fish" ? firstCard : secondCard;
+    const tagCard = firstCard.type === "tag" ? firstCard : secondCard;
+    const fish = fishCards.find((item) => item.id === fishCard.fishId);
+    return Boolean(fish && getCorrectChoice(fish, tags).id === tagCard.choiceId);
+  }
+
+  function validateFishRecord(fish, allTags) {
+    const errors = [];
+    const requiredTextFields = ["id", "individualName", "scientificName", "visualKey", "studyRequirementId"];
+    for (const field of requiredTextFields) {
+      if (!fish[field] || typeof fish[field] !== "string") errors.push(`missing-${field}`);
+    }
+    if (!Number.isFinite(fish.lengthCm) || fish.lengthCm <= 0) errors.push("invalid-length");
+    if (!Number.isFinite(fish.weightGrams) || fish.weightGrams <= 0) errors.push("invalid-weight");
+    if (!Array.isArray(fish.sourceIds) || fish.sourceIds.length === 0) errors.push("missing-sources");
+    const requirement = getStudyRequirement(fish);
+    if (!requirement) errors.push("missing-requirement");
+    if (requirement) {
+      const choice = selectBestTag(fish, allTags, requirement);
+      if (!choice || !choice.id) errors.push("missing-choice");
+      const validChoices = allTags.filter((tag) => evaluateTagForFish(fish, tag, requirement).valid);
+      if (choice.type === "tag" && validChoices.length === 0) errors.push("choice-inconsistent");
+      if (choice.type === "too-small" && validChoices.length > 0) errors.push("too-small-inconsistent");
+    }
+    return errors;
+  }
+
+  function validateDataset(fishCards, tags) {
+    const errors = [];
+    const ids = new Set();
+    for (const fish of fishCards) {
+      if (ids.has(fish.id)) errors.push(`${fish.id}:duplicate-id`);
+      ids.add(fish.id);
+      for (const error of validateFishRecord(fish, tags)) errors.push(`${fish.id}:${error}`);
+    }
+    return errors;
+  }
+
+  function validateLevel(fishCards, tags) {
+    const errors = [];
+    for (const fish of fishCards) {
+      const choice = getCorrectChoice(fish, tags);
+      if (!choice || !choice.id) errors.push(`${fish.id}:no-answer`);
+    }
+    const memoryCards = createMemoryCards(fishCards, tags, createSeededRandom(73));
+    if (!isMemoryBoardSolvable(memoryCards, fishCards, tags)) errors.push("memory-board-unsolvable");
+    return errors;
+  }
+
+  function isMemoryBoardSolvable(memoryCards, fishCards, tags) {
+    const required = new Map();
+    for (const fish of fishCards) {
+      const choiceId = getCorrectChoice(fish, tags).id;
+      required.set(choiceId, (required.get(choiceId) || 0) + 1);
+    }
+    const available = new Map();
+    for (const card of memoryCards) {
+      if (card.type !== "tag") continue;
+      available.set(card.choiceId, (available.get(card.choiceId) || 0) + 1);
+    }
+    if (memoryCards.filter((card) => card.type === "fish").length !== fishCards.length) return false;
+    for (const [choiceId, count] of required) {
+      if ((available.get(choiceId) || 0) !== count) return false;
+    }
+    return true;
+  }
+
+
+  function createMemoryState() {
+    return Object.freeze({
+      flippedCardIds: Object.freeze([]),
+      matchedCardIds: Object.freeze([]),
+      locked: false,
+      turns: 0,
+      mismatches: 0
+    });
+  }
+
+  function flipMemoryState(state, cardId) {
+    if (state.locked || state.matchedCardIds.includes(cardId) || state.flippedCardIds.includes(cardId) || state.flippedCardIds.length >= 2) {
+      return state;
+    }
+    const flippedCardIds = [...state.flippedCardIds, cardId];
+    return Object.freeze({
+      ...state,
+      flippedCardIds: Object.freeze(flippedCardIds),
+      locked: flippedCardIds.length === 2,
+      turns: state.turns + (flippedCardIds.length === 2 ? 1 : 0)
+    });
+  }
+
+  function resolveMemoryState(state, memoryCards, fishCards, tags) {
+    if (state.flippedCardIds.length !== 2) return state;
+    const [firstId, secondId] = state.flippedCardIds;
+    const first = memoryCards.find((card) => card.id === firstId);
+    const second = memoryCards.find((card) => card.id === secondId);
+    const matched = cardsFormScientificMatch(first, second, fishCards, tags);
+    return Object.freeze({
+      ...state,
+      flippedCardIds: Object.freeze([]),
+      matchedCardIds: matched
+        ? Object.freeze([...state.matchedCardIds, firstId, secondId])
+        : state.matchedCardIds,
+      locked: false,
+      mismatches: state.mismatches + (matched ? 0 : 1)
+    });
+  }
+
+  global.TelemetryLogic = Object.freeze({
+    OUTPUT_RANK,
+    calculateTagBurdenPercent,
+    effectiveDimensions,
+    evaluateTagForFish,
+    selectBestTag,
+    getStudyRequirement,
+    getCorrectChoice,
+    createSeededRandom,
+    shuffle,
+    generateFishSet,
+    createMemoryCards,
+    cardsFormScientificMatch,
+    validateFishRecord,
+    validateDataset,
+    validateLevel,
+    isMemoryBoardSolvable,
+    createMemoryState,
+    flipMemoryState,
+    resolveMemoryState
+  });
+})(globalThis);
+
+
+================================================================================
+FILE: game.js
+================================================================================
+
+"use strict";
+
+(function startGameModule(global) {
+  const {
+    SCIENCE_SOURCES,
+    TAG_CATALOGUE,
+    STUDY_REQUIREMENTS,
+    FISH_CARDS,
+    DIFFICULTY_SETTINGS,
+    VISUAL_REFERENCE_CHECKLIST,
+    DEFAULT_MAX_TAG_BURDEN_PERCENT,
+    TOO_SMALL_ID
+  } = global.GameData;
+  const {
+    calculateTagBurdenPercent,
+    evaluateTagForFish,
+    getCorrectChoice,
+    getStudyRequirement,
+    createSeededRandom,
+    generateFishSet,
+    createMemoryCards,
+    cardsFormScientificMatch,
+    validateDataset,
+    validateLevel
+  } = global.TelemetryLogic;
+  const { renderFishIllustration } = global.FishIllustrations;
+  const {
+    languageManager,
+    audioManager,
+    bindStandaloneControls,
+    showStandaloneError
+  } = global.TelemetryCore;
+
+  class FishTagMatchingGame {
+    constructor(i18n, audio) {
+      this.i18n = i18n;
+      this.audio = audio;
+      this.active = false;
+      this.mode = "sorting";
+      this.difficulty = "easy";
+      this.roundSeed = Date.now();
+      this.random = createSeededRandom(this.roundSeed);
+      this.config = DIFFICULTY_SETTINGS.easy;
+      this.availableTags = [];
+      this.fish = [];
+      this.selectedFishId = null;
+      this.solvedFishIds = new Set();
+      this.wrongAttemptsByFish = new Map();
+      this.incorrectFishId = null;
+      this.attempts = 0;
+      this.firstAttemptCorrect = 0;
+      this.score = 0;
+      this.state = "ready";
+      this.feedbackText = "";
+      this.feedbackTone = "";
+      this.memoryCards = [];
+      this.flippedCardIds = [];
+      this.matchedCardIds = new Set();
+      this.memoryLocked = false;
+      this.memoryPreviewing = false;
+      this.memoryTurns = 0;
+      this.memoryMatches = 0;
+      this.memoryMismatches = 0;
+      this.memoryTimeout = null;
+      this.previewTimeout = null;
+      this.dom = {};
+    }
+
+    initialize() {
+      this.cacheDom();
+      this.bindControls();
+      this.renderScienceContent();
+      this.runDevelopmentValidation();
+      this.startRound();
+    }
+
+    cacheDom() {
+      const ids = [
+        "matchingModeSelect", "matchingDifficultySelect", "sortingModePanel", "memoryModePanel",
+        "fishCardGrid", "tagTargetGrid", "memoryCardGrid", "matchingLevelDisplay", "matchingScoreDisplay",
+        "matchingAttemptsLabel", "matchingAttemptsDisplay", "matchingProgressDisplay", "matchingStateDisplay",
+        "matchingRestartButton", "matchingNextButton", "matchingHintButton", "matchingFeedback", "errorPanel",
+        "selectedMissionPanel", "completionSummary", "tutorialButton", "scienceButton", "tutorialDialog",
+        "scienceDialog", "scienceSourceList", "visualChecklist", "validationStatus"
+      ];
+      for (const id of ids) this.dom[this.toCamel(id)] = document.getElementById(id);
+    }
+
+    toCamel(value) {
+      return value.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+    }
+
+    bindControls() {
+      this.dom.matchingModeSelect.addEventListener("change", () => this.startRound());
+      this.dom.matchingDifficultySelect.addEventListener("change", () => this.startRound());
+      this.dom.matchingRestartButton.addEventListener("click", () => this.startRound());
+      this.dom.matchingNextButton.addEventListener("click", () => this.advanceDifficulty());
+      this.dom.matchingHintButton.addEventListener("click", () => this.showHint());
+      this.dom.tutorialButton.addEventListener("click", () => this.openDialog(this.dom.tutorialDialog));
+      this.dom.scienceButton.addEventListener("click", () => this.openDialog(this.dom.scienceDialog));
+      document.querySelectorAll("[data-close-dialog]").forEach((button) => {
+        button.addEventListener("click", () => button.closest("dialog")?.close());
+      });
+      document.querySelectorAll("dialog").forEach((dialog) => {
+        dialog.addEventListener("click", (event) => {
+          if (event.target === dialog) dialog.close();
+        });
+      });
+    }
+
+    openDialog(dialog) {
+      if (!dialog) return;
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "");
+    }
+
+    activate() {
+      this.active = true;
+    }
+
+    deactivate() {
+      this.active = false;
+      this.cleanupTimers();
+    }
+
+    applyLanguage() {
+      this.renderScienceContent();
+      if (this.mode === "sorting") {
+        this.renderSorting();
+        this.renderMission();
+        if (this.state === "complete") {
+          this.feedbackText = this.i18n.t("sortingComplete", {
+            score: this.score,
+            firstAttempts: this.firstAttemptCorrect
+          });
+        } else if (this.selectedFishId) {
+          const fish = this.getFish(this.selectedFishId);
+          this.feedbackText = this.i18n.t("selectedFish", { name: fish.individualName });
+        } else {
+          this.feedbackText = this.i18n.t("sortingInstructions");
+        }
+      } else {
+        this.renderMemory();
+        if (this.state === "complete") this.feedbackText = this.buildMemoryCompleteText();
+        else if (this.memoryPreviewing) {
+          this.feedbackText = this.i18n.t("memoryPreview");
+        } else this.feedbackText = this.i18n.t("memoryReady");
+      }
+      this.renderFeedback();
+      this.renderCompletionSummary();
+      this.updateHud();
+    }
+
+    startRound() {
+      this.cleanupTimers();
+      this.mode = this.dom.matchingModeSelect.value;
+      this.difficulty = this.dom.matchingDifficultySelect.value;
+      this.config = DIFFICULTY_SETTINGS[this.difficulty];
+      this.availableTags = this.config.tagIds.map((id) => TAG_CATALOGUE.find((tag) => tag.id === id)).filter(Boolean);
+      this.roundSeed = Date.now() ^ Math.floor(Math.random() * 0xffffffff);
+      this.random = createSeededRandom(this.roundSeed);
+      this.fish = generateFishSet(this.config, this.mode, this.random);
+      this.selectedFishId = null;
+      this.solvedFishIds = new Set();
+      this.wrongAttemptsByFish = new Map();
+      this.incorrectFishId = null;
+      this.attempts = 0;
+      this.firstAttemptCorrect = 0;
+      this.score = 0;
+      this.state = "ready";
+      this.memoryCards = [];
+      this.flippedCardIds = [];
+      this.matchedCardIds = new Set();
+      this.memoryLocked = false;
+      this.memoryPreviewing = false;
+      this.memoryTurns = 0;
+      this.memoryMatches = 0;
+      this.memoryMismatches = 0;
+      this.dom.sortingModePanel.hidden = this.mode !== "sorting";
+      this.dom.memoryModePanel.hidden = this.mode !== "memory";
+      this.dom.matchingHintButton.hidden = this.mode !== "sorting";
+      this.dom.matchingNextButton.hidden = true;
+      this.dom.completionSummary.hidden = true;
+
+      const levelErrors = validateLevel(this.fish, this.availableTags);
+      if (levelErrors.length) throw new Error(`Generated level failed validation: ${levelErrors.join(", ")}`);
+
+      if (this.mode === "sorting") {
+        this.feedbackText = this.i18n.t("sortingInstructions");
+        this.feedbackTone = "";
+        this.renderSorting();
+        this.renderMission();
+      } else {
+        this.dom.selectedMissionPanel.hidden = true;
+        this.dom.selectedMissionPanel.replaceChildren();
+        this.memoryCards = createMemoryCards(this.fish, this.availableTags, this.random);
+        this.feedbackText = this.i18n.t("memoryReady");
+        this.feedbackTone = "";
+        this.renderMemory();
+        if (this.config.memoryPreviewSeconds > 0) this.startMemoryPreview(this.config.memoryPreviewSeconds);
+      }
+      this.renderFeedback();
+      this.updateHud();
+    }
+
+    startMemoryPreview(seconds) {
+      this.memoryPreviewing = true;
+      this.memoryLocked = true;
+      this.feedbackText = this.i18n.t("memoryPreview");
+      this.feedbackTone = "hint";
+      this.renderMemory();
+      this.updateHud();
+      this.previewTimeout = global.setTimeout(() => {
+        this.memoryPreviewing = false;
+        this.memoryLocked = false;
+        this.previewTimeout = null;
+        this.feedbackText = this.i18n.t("memoryReady");
+        this.feedbackTone = "";
+        this.renderMemory();
+        this.renderFeedback();
+        this.updateHud();
+      }, seconds * 1000);
+    }
+
+    renderSorting() {
+      this.dom.fishCardGrid.replaceChildren(...this.fish.map((fish) => this.createFishCard(fish)));
+      const choices = [...this.availableTags.map((tag) => this.createTagTarget(tag)), this.createTooSmallTarget()];
+      this.dom.tagTargetGrid.replaceChildren(...choices);
+    }
+
+    createFishCard(fish) {
+      const article = document.createElement("article");
+      article.className = "fish-card";
+      article.dataset.fishId = fish.id;
+      article.classList.toggle("is-selected", this.selectedFishId === fish.id);
+      article.classList.toggle("is-matched", this.solvedFishIds.has(fish.id));
+      article.classList.toggle("is-incorrect", this.incorrectFishId === fish.id);
+
+      const selectButton = document.createElement("button");
+      selectButton.type = "button";
+      selectButton.className = "fish-select-button";
+      selectButton.disabled = this.solvedFishIds.has(fish.id);
+      selectButton.draggable = !selectButton.disabled;
+      selectButton.setAttribute("aria-pressed", String(this.selectedFishId === fish.id));
+      selectButton.setAttribute("aria-label", this.fishAriaLabel(fish));
+      selectButton.innerHTML = `
+        <span class="fish-illustration-wrap">
+          ${renderFishIllustration(fish.visualKey)}
+          <span class="sr-only">${this.escapeHtml(this.i18n.value(fish.illustrationAltText))}</span>
+        </span>
+        <span class="fish-copy">
+          <span class="individual-name">${this.escapeHtml(fish.individualName)}</span>
+          <strong class="common-name">${this.escapeHtml(this.i18n.value(fish.commonName))}</strong>
+          <em class="scientific-name">${this.escapeHtml(fish.scientificName)}</em>
+          <span class="measurement-row"><span>${this.escapeHtml(this.i18n.t("lengthLabel"))}</span><b>${this.formatLength(fish)}</b></span>
+          <span class="measurement-row"><span>${this.escapeHtml(this.i18n.t("massLabel"))}</span><b>${this.formatMass(fish.weightGrams)}</b></span>
+          <span class="measurement-row"><span>${this.escapeHtml(this.i18n.t("lifeStageLabel"))}</span><b>${this.escapeHtml(this.lifeStageLabel(fish.lifeStage))}</b></span>
+          <span class="habitat-line">${this.escapeHtml(this.i18n.value(fish.habitatSummary))}</span>
+        </span>`;
+      selectButton.addEventListener("click", () => this.selectFish(fish.id));
+      selectButton.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/fish-id", fish.id);
+        event.dataTransfer.effectAllowed = "move";
+        this.selectFish(fish.id, false);
+      });
+
+      const sources = document.createElement("details");
+      sources.className = "card-sources";
+      const summary = document.createElement("summary");
+      summary.textContent = this.i18n.t("showSources");
+      sources.append(summary, this.createSourceList(fish.sourceIds, true));
+
+      article.append(selectButton, sources);
+      return article;
+    }
+
+    fishAriaLabel(fish) {
+      const mission = getStudyRequirement(fish);
+      return `${fish.individualName}, ${this.i18n.value(fish.commonName)}, ${fish.scientificName}. ${this.i18n.t("massLabel")}: ${this.formatMass(fish.weightGrams)}. ${this.i18n.t("missionLabel")}: ${this.i18n.value(mission.title)}.`;
+    }
+
+    createTagTarget(tag) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "tag-target";
+      button.dataset.tagId = tag.id;
+      button.style.setProperty("--tag-width", `${tag.visualWidth}px`);
+      const requirementAttachment = this.selectedFishId ? getStudyRequirement(this.getFish(this.selectedFishId)).attachmentType : "internal";
+      const dimensions = global.TelemetryLogic.effectiveDimensions(tag, requirementAttachment);
+      const matchedNames = this.fish
+        .filter((fish) => this.solvedFishIds.has(fish.id) && getCorrectChoice(fish, this.availableTags).id === tag.id)
+        .map((fish) => fish.individualName);
+      button.setAttribute("aria-label", this.tagAriaLabel(tag));
+      button.innerHTML = `
+        <span class="tag-ruler" aria-hidden="true"><span class="tag-capsule"></span><span class="ruler-marks"></span></span>
+        <span class="tag-copy">
+          <span class="tag-model">${this.escapeHtml(tag.referenceModel)}</span>
+          <strong>${this.escapeHtml(this.i18n.value(tag.educationalName))}</strong>
+          <span class="tag-stat-grid">
+            <span><small>${this.escapeHtml(this.i18n.t("diameterLabel"))}</small><b>${this.formatNumber(dimensions.diameterMm, 1)} mm</b></span>
+            <span><small>${this.escapeHtml(this.i18n.t("tagLengthLabel"))}</small><b>${this.formatNumber(dimensions.lengthMm, 1)} mm</b></span>
+            <span><small>${this.escapeHtml(this.i18n.t("tagMassLabel"))}</small><b>${this.formatNumber(tag.weightInAirGrams, 1)} g</b></span>
+            <span><small>${this.escapeHtml(this.i18n.t("batteryLabel"))}</small><b>${this.i18n.integer(tag.batteryDays)} d</b></span>
+          </span>
+          <span class="tag-badges">${this.renderTagBadges(tag)}</span>
+          ${matchedNames.length ? `<span class="matched-list">✓ ${this.escapeHtml(matchedNames.join(", "))}</span>` : ""}
+        </span>`;
+      button.addEventListener("click", () => this.assignSelectedFish(tag.id));
+      button.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        button.classList.add("is-drag-over");
+      });
+      button.addEventListener("dragleave", () => button.classList.remove("is-drag-over"));
+      button.addEventListener("drop", (event) => {
+        event.preventDefault();
+        button.classList.remove("is-drag-over");
+        const fishId = event.dataTransfer.getData("text/fish-id");
+        if (fishId) this.assignFish(fishId, tag.id);
+      });
+      return button;
+    }
+
+    createTooSmallTarget() {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "tag-target too-small-target";
+      button.dataset.tagId = TOO_SMALL_ID;
+      button.setAttribute("aria-label", this.i18n.t("tooSmallCardLabel"));
+      const matchedNames = this.fish
+        .filter((fish) => this.solvedFishIds.has(fish.id) && getCorrectChoice(fish, this.availableTags).id === TOO_SMALL_ID)
+        .map((fish) => fish.individualName);
+      button.innerHTML = `
+        <span class="no-tag-symbol" aria-hidden="true">Ø</span>
+        <span class="tag-copy">
+          <span class="tag-model">WELFARE DECISION</span>
+          <strong>${this.escapeHtml(this.i18n.t("tooSmallName"))}</strong>
+          <span class="tag-explanation">${this.escapeHtml(this.i18n.t("tooSmallShort"))}</span>
+          ${matchedNames.length ? `<span class="matched-list">✓ ${this.escapeHtml(matchedNames.join(", "))}</span>` : ""}
+        </span>`;
+      button.addEventListener("click", () => this.assignSelectedFish(TOO_SMALL_ID));
+      button.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        button.classList.add("is-drag-over");
+      });
+      button.addEventListener("dragleave", () => button.classList.remove("is-drag-over"));
+      button.addEventListener("drop", (event) => {
+        event.preventDefault();
+        button.classList.remove("is-drag-over");
+        const fishId = event.dataTransfer.getData("text/fish-id");
+        if (fishId) this.assignFish(fishId, TOO_SMALL_ID);
+      });
+      return button;
+    }
+
+    tagAriaLabel(tag) {
+      return `${this.i18n.value(tag.educationalName)}, ${tag.referenceModel}. ${this.i18n.t("tagMassLabel")}: ${this.formatNumber(tag.weightInAirGrams, 1)} g. ${this.i18n.t("batteryLabel")}: ${this.i18n.integer(tag.batteryDays)} ${this.i18n.t("days", { count: "" }).trim()}.`;
+    }
+
+    renderTagBadges(tag) {
+      const sensors = tag.sensors.length ? tag.sensors.map((sensor) => this.sensorLabel(sensor)) : [this.i18n.t("noSensors")];
+      const attachments = tag.attachmentTypes.map((attachment) => this.attachmentLabel(attachment));
+      return [
+        `<span class="tag-badge">${this.escapeHtml(attachments.join(" / "))}</span>`,
+        `<span class="tag-badge">${this.escapeHtml(sensors.join(" + "))}</span>`,
+        `<span class="tag-badge">${this.escapeHtml(this.outputLabel(tag.outputClass))}</span>`
+      ].join("");
+    }
+
+    selectFish(fishId, rerender = true) {
+      if (this.solvedFishIds.has(fishId)) return;
+      this.selectedFishId = fishId;
+      this.incorrectFishId = null;
+      const fish = this.getFish(fishId);
+      this.audio.playSelect();
+      this.setFeedback(this.i18n.t("selectedFish", { name: fish.individualName }), "");
+      this.renderMission();
+      if (rerender) {
+        this.renderSorting();
+        global.requestAnimationFrame(() => {
+          this.dom.fishCardGrid.querySelector(`[data-fish-id="${fishId}"] .fish-select-button`)?.focus();
+        });
+      }
+    }
+
+    assignSelectedFish(choiceId) {
+      if (!this.selectedFishId) {
+        this.setFeedback(this.i18n.t("chooseFishFirst"), "error");
+        return;
+      }
+      this.assignFish(this.selectedFishId, choiceId);
+    }
+
+    assignFish(fishId, choiceId) {
+      const fish = this.getFish(fishId);
+      if (!fish || this.solvedFishIds.has(fishId)) return;
+      const correct = getCorrectChoice(fish, this.availableTags);
+      const wrongBefore = this.wrongAttemptsByFish.get(fishId) || 0;
+      this.attempts += 1;
+
+      if (correct.id === choiceId) {
+        if (wrongBefore === 0) this.firstAttemptCorrect += 1;
+        this.score += Math.max(40, 100 - wrongBefore * 20);
+        this.solvedFishIds.add(fishId);
+        this.selectedFishId = null;
+        this.incorrectFishId = null;
+        this.audio.playSuccess();
+        this.setFeedback(this.buildCorrectFeedback(fish, correct), "success");
+        if (this.solvedFishIds.size === this.fish.length) this.completeSortingRound();
+      } else {
+        this.wrongAttemptsByFish.set(fishId, wrongBefore + 1);
+        this.incorrectFishId = fishId;
+        this.selectedFishId = fishId;
+        this.audio.playFailure();
+        this.setFeedback(this.buildIncorrectFeedback(fish, choiceId, correct), "error");
+      }
+      this.renderSorting();
+      this.renderMission();
+      this.updateHud();
+    }
+
+    buildCorrectFeedback(fish, correct) {
+      if (correct.id === TOO_SMALL_ID) {
+        const candidate = this.bestRejectedCandidate(correct.candidates);
+        const reason = candidate ? this.reasonText(candidate.evaluation.reasons[0]) : this.i18n.t("tooSmallShort");
+        return `${this.i18n.t("correctPrefix")} ${fish.individualName}: ${this.i18n.t("tooSmallExplanation", { reason })}`;
+      }
+      const requirement = getStudyRequirement(fish);
+      const evaluation = correct.evaluation;
+      const burden = this.formatNumber(evaluation.burdenPercent, 2);
+      const burdenText = requirement.attachmentType === "internal"
+        ? this.i18n.t("burdenSentence", {
+            tagMass: this.formatNumber(correct.tag.weightInAirGrams, 1),
+            fishMass: this.formatNumber(fish.weightGrams, 0),
+            burden
+          })
+        : this.i18n.t("externalBurdenSentence", { burden });
+      const missionText = this.i18n.t("meetsMissionSentence", {
+        battery: this.i18n.integer(requirement.minimumBatteryDays),
+        output: this.outputLabel(requirement.outputClass)
+      });
+      return `${this.i18n.t("correctPrefix")} ${fish.individualName} → ${this.i18n.value(correct.tag.educationalName)} (${correct.tag.referenceModel}). ${burdenText} ${missionText}`;
+    }
+
+    bestRejectedCandidate(candidates) {
+      return [...candidates].sort((a, b) =>
+        a.evaluation.reasons.length - b.evaluation.reasons.length ||
+        a.tag.weightInAirGrams - b.tag.weightInAirGrams
+      )[0] || null;
+    }
+
+    buildIncorrectFeedback(fish, choiceId, correct) {
+      let reason;
+      if (choiceId === TOO_SMALL_ID) {
+        reason = this.i18n.t("reasonTagExists");
+      } else {
+        const chosenTag = this.availableTags.find((tag) => tag.id === choiceId);
+        const requirement = getStudyRequirement(fish);
+        const evaluation = evaluateTagForFish(fish, chosenTag, requirement);
+        reason = evaluation.valid ? this.i18n.t("reasonLargerThanNeeded") : this.reasonText(evaluation.reasons[0]);
+      }
+      return `${this.i18n.t("incorrectPrefix")} ${fish.individualName}: ${reason}`;
+    }
+
+    completeSortingRound() {
+      this.state = "complete";
+      this.dom.matchingNextButton.hidden = this.difficulty === "hard";
+      this.feedbackText = this.i18n.t("sortingComplete", {
+        score: this.score,
+        firstAttempts: this.firstAttemptCorrect
+      });
+      this.feedbackTone = "success";
+      this.renderFeedback();
+      this.renderCompletionSummary();
+    }
+
+    showHint() {
+      const fish = this.getFish(this.selectedFishId);
+      if (!fish) {
+        this.setFeedback(this.i18n.t("hintSelectFish"), "hint");
+        return;
+      }
+      const requirement = getStudyRequirement(fish);
+      const sensors = requirement.requiredSensors.length
+        ? requirement.requiredSensors.map((sensor) => this.sensorLabel(sensor)).join(" + ")
+        : this.i18n.t("noSensors");
+      const mission = this.i18n.t("hintMission", {
+        mission: this.i18n.value(requirement.title),
+        battery: this.i18n.integer(requirement.minimumBatteryDays),
+        attachment: this.attachmentLabel(requirement.attachmentType),
+        sensors
+      });
+      const burden = requirement.attachmentType === "internal"
+        ? ` ${this.i18n.t("hintBurden", { limit: this.formatNumber(fish.maxTagBurdenPercent, 0) })}`
+        : "";
+      this.setFeedback(`${mission}${burden}`, "hint");
+    }
+
+    renderMission() {
+      const panel = this.dom.selectedMissionPanel;
+      const fish = this.getFish(this.selectedFishId);
+      if (!fish) {
+        panel.hidden = true;
+        panel.replaceChildren();
+        return;
+      }
+      const requirement = getStudyRequirement(fish);
+      const showDetails = this.config.showStudyRequirementHints;
+      const sensors = requirement.requiredSensors.length
+        ? requirement.requiredSensors.map((sensor) => this.sensorLabel(sensor)).join(" + ")
+        : this.i18n.t("noSensors");
+      panel.hidden = false;
+      panel.innerHTML = `
+        <div class="mission-heading">
+          <span class="section-number">${this.escapeHtml(this.i18n.t("missionLabel"))}</span>
+          <h3>${this.escapeHtml(fish.individualName)} · ${this.escapeHtml(this.i18n.value(requirement.title))}</h3>
+        </div>
+        <p>${this.escapeHtml(this.i18n.value(requirement.summary))}</p>
+        ${showDetails ? `<div class="mission-chips">
+          <span>${this.escapeHtml(this.i18n.t("batteryLabel"))}: ≥ ${this.i18n.integer(requirement.minimumBatteryDays)} d</span>
+          <span>${this.escapeHtml(this.i18n.t("attachmentLabel"))}: ${this.escapeHtml(this.attachmentLabel(requirement.attachmentType))}</span>
+          <span>${this.escapeHtml(this.i18n.t("sensorsLabel"))}: ${this.escapeHtml(sensors)}</span>
+          <span>${this.escapeHtml(this.i18n.t("outputLabel"))}: ${this.escapeHtml(this.outputLabel(requirement.outputClass))}</span>
+        </div>` : ""}`;
+    }
+
+    renderMemory() {
+      this.dom.memoryCardGrid.replaceChildren(...this.memoryCards.map((card) => this.createMemoryCard(card)));
+    }
+
+    createMemoryCard(card) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "memory-card";
+      button.dataset.cardId = card.id;
+      const flipped = this.memoryPreviewing || this.flippedCardIds.includes(card.id);
+      const matched = this.matchedCardIds.has(card.id);
+      button.classList.toggle("is-flipped", flipped);
+      button.classList.toggle("is-matched", matched);
+      button.disabled = matched || this.memoryLocked || this.memoryPreviewing;
+      button.setAttribute("role", "gridcell");
+      button.setAttribute("aria-pressed", String(flipped || matched));
+
+      const front = card.type === "fish" ? this.memoryFishFront(card) : this.memoryTagFront(card);
+      const accessible = flipped || matched ? front.aria : this.i18n.t("hiddenCardLabel");
+      button.setAttribute("aria-label", accessible);
+      button.innerHTML = `
+        <span class="memory-card-inner">
+          <span class="memory-face memory-card-back" aria-hidden="true"><span>?</span><small>69 kHz</small></span>
+          <span class="memory-face memory-card-front">${front.html}</span>
+        </span>`;
+      button.addEventListener("click", () => this.flipMemoryCard(card.id));
+      return button;
+    }
+
+    memoryFishFront(card) {
+      const fish = this.getFish(card.fishId);
+      return {
+        aria: `${this.i18n.t("fishCardType")}: ${fish.individualName}, ${this.i18n.value(fish.commonName)}, ${this.formatMass(fish.weightGrams)}.`,
+        html: `
+          <span class="memory-type">${this.escapeHtml(this.i18n.t("fishCardType"))}</span>
+          <span class="memory-illustration">${renderFishIllustration(fish.visualKey)}</span>
+          <strong>${this.escapeHtml(fish.individualName)}</strong>
+          <em>${this.escapeHtml(this.i18n.value(fish.commonName))}</em>
+          <span class="memory-detail">${this.escapeHtml(this.formatMass(fish.weightGrams))}</span>`
+      };
+    }
+
+    memoryTagFront(card) {
+      if (card.choiceId === TOO_SMALL_ID) {
+        return {
+          aria: `${this.i18n.t("tagCardType")}: ${this.i18n.t("tooSmallName")}.`,
+          html: `
+            <span class="memory-type">${this.escapeHtml(this.i18n.t("tagCardType"))}</span>
+            <span class="memory-no-tag" aria-hidden="true">Ø</span>
+            <strong>${this.escapeHtml(this.i18n.t("tooSmallName"))}</strong>
+            <span class="memory-detail">${this.escapeHtml(this.i18n.t("tooSmallShort"))}</span>`
+        };
+      }
+      const tag = this.availableTags.find((item) => item.id === card.choiceId);
+      return {
+        aria: `${this.i18n.t("tagCardType")}: ${this.i18n.value(tag.educationalName)}, ${tag.referenceModel}, ${this.formatNumber(tag.weightInAirGrams, 1)} g.`,
+        html: `
+          <span class="memory-type">${this.escapeHtml(this.i18n.t("tagCardType"))}</span>
+          <span class="memory-tag-visual" style="--tag-width:${tag.visualWidth}px" aria-hidden="true"></span>
+          <strong>${this.escapeHtml(tag.referenceModel)}</strong>
+          <span class="memory-detail">${this.formatNumber(tag.weightInAirGrams, 1)} g · ${this.i18n.integer(tag.batteryDays)} d</span>`
+      };
+    }
+
+    flipMemoryCard(cardId) {
+      if (this.memoryLocked || this.memoryPreviewing || this.matchedCardIds.has(cardId) || this.flippedCardIds.includes(cardId)) return;
+      this.flippedCardIds.push(cardId);
+      this.audio.playSelect();
+      this.renderMemory();
+      if (this.flippedCardIds.length < 2) return;
+      this.memoryTurns += 1;
+      this.attempts = this.memoryTurns;
+      this.memoryLocked = true;
+      this.memoryTimeout = global.setTimeout(() => this.resolveMemoryPair(), 650);
+      this.updateHud();
+    }
+
+    resolveMemoryPair() {
+      const [firstId, secondId] = this.flippedCardIds;
+      const first = this.memoryCards.find((card) => card.id === firstId);
+      const second = this.memoryCards.find((card) => card.id === secondId);
+      const isMatch = cardsFormScientificMatch(first, second, this.fish, this.availableTags);
+
+      if (isMatch) {
+        const fishCard = first.type === "fish" ? first : second;
+        const fish = this.getFish(fishCard.fishId);
+        const choice = getCorrectChoice(fish, this.availableTags);
+        this.matchedCardIds.add(firstId);
+        this.matchedCardIds.add(secondId);
+        this.memoryMatches += 1;
+        this.score += 100;
+        this.audio.playSuccess();
+        this.setFeedback(this.i18n.t("memoryMatch", {
+          fish: fish.individualName,
+          tag: this.choiceLabel(choice.id)
+        }), "success");
+      } else {
+        this.memoryMismatches += 1;
+        this.audio.playFailure();
+        this.setFeedback(this.i18n.t("memoryNoMatch"), "error");
+      }
+
+      this.flippedCardIds = [];
+      this.memoryLocked = false;
+      this.memoryTimeout = null;
+
+      if (this.memoryMatches === this.fish.length) this.completeMemoryRound();
+      this.renderMemory();
+      this.updateHud();
+    }
+
+    completeMemoryRound() {
+      this.state = "complete";
+      this.saveBestMoves();
+      this.dom.matchingNextButton.hidden = this.difficulty === "hard";
+      this.feedbackText = this.buildMemoryCompleteText();
+      this.feedbackTone = "success";
+      this.renderFeedback();
+      this.renderCompletionSummary();
+    }
+
+    buildMemoryCompleteText() {
+      return this.i18n.t("memoryComplete", {
+        moves: this.memoryTurns,
+        mismatches: this.memoryMismatches
+      });
+    }
+
+
+    cleanupTimers() {
+      if (this.memoryTimeout) global.clearTimeout(this.memoryTimeout);
+      if (this.previewTimeout) global.clearTimeout(this.previewTimeout);
+      this.memoryTimeout = null;
+      this.previewTimeout = null;
+    }
+
+    advanceDifficulty() {
+      const order = ["easy", "medium", "hard"];
+      const index = order.indexOf(this.difficulty);
+      if (index < order.length - 1) {
+        this.dom.matchingDifficultySelect.value = order[index + 1];
+        this.startRound();
+      }
+    }
+
+    updateHud() {
+      const order = ["easy", "medium", "hard"];
+      this.dom.matchingLevelDisplay.textContent = `${order.indexOf(this.difficulty) + 1} / ${order.length}`;
+      this.dom.matchingScoreDisplay.textContent = String(this.score);
+      this.dom.matchingAttemptsLabel.textContent = this.i18n.t(this.mode === "memory" ? "hudMoves" : "hudAttempts");
+      if (this.mode === "memory") {
+        this.dom.matchingAttemptsDisplay.textContent = String(this.memoryTurns);
+        this.dom.matchingProgressDisplay.textContent = `${this.memoryMatches} / ${this.fish.length}`;
+      } else {
+        this.dom.matchingAttemptsDisplay.textContent = String(this.attempts);
+        this.dom.matchingProgressDisplay.textContent = `${this.solvedFishIds.size} / ${this.fish.length}`;
+      }
+      const stateKey = this.state === "complete" ? "stateComplete" : this.memoryPreviewing ? "statePreview" : "stateReady";
+      this.dom.matchingStateDisplay.textContent = this.i18n.t(stateKey);
+    }
+
+    setFeedback(text, tone = "") {
+      this.feedbackText = text;
+      this.feedbackTone = tone;
+      this.renderFeedback();
+    }
+
+    renderFeedback() {
+      this.dom.matchingFeedback.textContent = this.feedbackText;
+      this.dom.matchingFeedback.classList.toggle("is-success", this.feedbackTone === "success");
+      this.dom.matchingFeedback.classList.toggle("is-error", this.feedbackTone === "error");
+      this.dom.matchingFeedback.classList.toggle("is-hint", this.feedbackTone === "hint");
+    }
+
+    renderCompletionSummary() {
+      if (this.state !== "complete") {
+        this.dom.completionSummary.hidden = true;
+        return;
+      }
+      this.dom.completionSummary.hidden = false;
+      const accuracy = this.mode === "sorting"
+        ? (this.fish.length / Math.max(1, this.attempts)) * 100
+        : (this.memoryMatches / Math.max(1, this.memoryMatches + this.memoryMismatches)) * 100;
+      const bestMoves = this.mode === "memory" ? this.readBestMoves() : null;
+      const statistics = this.mode === "sorting"
+        ? `
+          <div><span>${this.escapeHtml(this.i18n.t("summaryScore"))}</span><strong>${this.score}</strong></div>
+          <div><span>${this.escapeHtml(this.i18n.t("summaryFirstAttempts"))}</span><strong>${this.firstAttemptCorrect} / ${this.fish.length}</strong></div>
+          <div><span>${this.escapeHtml(this.i18n.t("summaryAccuracy"))}</span><strong>${this.i18n.t("accuracyValue", { value: this.formatNumber(accuracy, 0) })}</strong></div>`
+        : `
+          <div><span>${this.escapeHtml(this.i18n.t("summaryScore"))}</span><strong>${this.score}</strong></div>
+          <div><span>${this.escapeHtml(this.i18n.t("summaryMismatches"))}</span><strong>${this.memoryMismatches}</strong></div>
+          <div><span>${this.escapeHtml(this.i18n.t("summaryAccuracy"))}</span><strong>${this.i18n.t("accuracyValue", { value: this.formatNumber(accuracy, 0) })}</strong></div>
+          <div><span>${this.escapeHtml(this.i18n.t("summaryBest"))}</span><strong>${bestMoves ?? this.i18n.t("notAvailable")}</strong></div>`;
+      const review = this.fish.map((fish) => this.reviewRow(fish)).join("");
+      this.dom.completionSummary.innerHTML = `
+        <h3>${this.escapeHtml(this.i18n.t("summaryHeading"))}</h3>
+        <div class="summary-stats">${statistics}</div>
+        <h4>${this.escapeHtml(this.i18n.t("summaryReview"))}</h4>
+        <div class="review-grid">${review}</div>`;
+    }
+
+    reviewRow(fish) {
+      const choice = getCorrectChoice(fish, this.availableTags);
+      let calculation;
+      if (choice.id === TOO_SMALL_ID) {
+        const candidate = this.bestRejectedCandidate(choice.candidates);
+        calculation = candidate
+          ? this.reasonText(candidate.evaluation.reasons[0])
+          : this.i18n.t("tooSmallShort");
+      } else {
+        const requirement = getStudyRequirement(fish);
+        const burden = calculateTagBurdenPercent(fish, choice.tag);
+        calculation = requirement.attachmentType === "internal"
+          ? `${this.formatNumber(burden, 2)}% ≤ ${this.formatNumber(fish.maxTagBurdenPercent, 0)}%`
+          : `${this.attachmentLabel("external")} · ${this.formatNumber(burden, 2)}%`;
+      }
+      return `
+        <article class="review-row">
+          <div>${renderFishIllustration(fish.visualKey)}</div>
+          <p><strong>${this.escapeHtml(fish.individualName)}</strong><em>${this.escapeHtml(this.i18n.value(fish.commonName))}</em></p>
+          <p><strong>${this.escapeHtml(this.choiceLabel(choice.id))}</strong><span>${this.escapeHtml(calculation)}</span></p>
+        </article>`;
+    }
+
+    saveBestMoves() {
+      if (this.mode !== "memory") return;
+      const key = `telemetryBestMoves-${this.fish.length}`;
+      try {
+        const previous = Number(global.localStorage?.getItem(key));
+        if (!Number.isFinite(previous) || previous <= 0 || this.memoryTurns < previous) {
+          global.localStorage?.setItem(key, String(this.memoryTurns));
+        }
+      } catch (error) {
+        console.warn("Best score could not be saved.", error);
+      }
+    }
+
+    readBestMoves() {
+      try {
+        const value = Number(global.localStorage?.getItem(`telemetryBestMoves-${this.fish.length}`));
+        return Number.isFinite(value) && value > 0 ? value : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    runDevelopmentValidation() {
+      const issues = validateDataset(FISH_CARDS, TAG_CATALOGUE);
+      for (const [difficulty, config] of Object.entries(DIFFICULTY_SETTINGS)) {
+        const tags = config.tagIds.map((id) => TAG_CATALOGUE.find((tag) => tag.id === id)).filter(Boolean);
+        const random = createSeededRandom(100 + difficulty.length);
+        for (const mode of ["sorting", "memory"]) {
+          const fish = generateFishSet(config, mode, random);
+          for (const issue of validateLevel(fish, tags)) issues.push(`${difficulty}-${mode}:${issue}`);
+        }
+      }
+      const totalChecks = FISH_CARDS.length + Object.keys(DIFFICULTY_SETTINGS).length * 2;
+      this.dom.validationStatus.classList.toggle("is-error", issues.length > 0);
+      this.dom.validationStatus.textContent = issues.length
+        ? `${this.i18n.t("testFailed", { count: issues.length })} ${issues.join(" · ")}`
+        : this.i18n.t("testPassed", { count: totalChecks });
+      if (issues.length) console.error("Development validation issues", issues);
+    }
+
+    renderScienceContent() {
+      if (!this.dom.scienceSourceList || !this.dom.visualChecklist) return;
+      const sourceIds = [
+        "innovasea69", "innovaseaTags", "jepsen2005", "externalAttachment2022",
+        "herring", "sprat", "mackerel", "cod", "haddock", "plaice", "salmon", "eel", "seabass",
+        "dogfish", "catshark", "tope", "thornback", "spottedRay", "pollack"
+      ];
+      this.dom.scienceSourceList.replaceChildren(this.createSourceList(sourceIds, false));
+      this.dom.visualChecklist.innerHTML = VISUAL_REFERENCE_CHECKLIST.map((item) => `
+        <li><strong>${this.escapeHtml(item.species)}</strong><span>${this.escapeHtml(item.traits)}</span></li>`).join("");
+      this.runDevelopmentValidation();
+    }
+
+    createSourceList(sourceIds, compact) {
+      const list = document.createElement("ul");
+      list.className = compact ? "source-list compact-source-list" : "source-list";
+      for (const sourceId of sourceIds) {
+        const source = SCIENCE_SOURCES[sourceId];
+        if (!source) continue;
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = source.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = source.title;
+        const meta = document.createElement("span");
+        meta.textContent = `${source.organization} · ${this.i18n.t("sourceAccessed", { date: source.accessedDate })}`;
+        item.append(link, meta);
+        list.append(item);
+      }
+      return list;
+    }
+
+    getFish(id) {
+      return this.fish.find((fish) => fish.id === id) || FISH_CARDS.find((fish) => fish.id === id) || null;
+    }
+
+    choiceLabel(choiceId) {
+      if (choiceId === TOO_SMALL_ID) return this.i18n.t("tooSmallName");
+      const tag = this.availableTags.find((item) => item.id === choiceId) || TAG_CATALOGUE.find((item) => item.id === choiceId);
+      return tag ? `${this.i18n.value(tag.educationalName)} (${tag.referenceModel})` : choiceId;
+    }
+
+    reasonText(reason) {
+      const map = {
+        "wrong-attachment": "reasonWrongAttachment",
+        "fish-attachment-unsupported": "reasonFishAttachmentUnsupported",
+        "too-heavy": "reasonTooHeavy",
+        "external-fish-too-small": "reasonExternalFishTooSmall",
+        "too-wide": "reasonTooWide",
+        "too-long": "reasonTooLong",
+        "battery-short": "reasonBatteryShort",
+        "missing-temperature": "reasonMissingTemperature",
+        "missing-depth": "reasonMissingDepth",
+        "output-low": "reasonOutputLow"
+      };
+      return this.i18n.t(map[reason] || reason);
+    }
+
+    attachmentLabel(value) {
+      return this.i18n.t(value === "external" ? "attachmentExternal" : "attachmentInternal");
+    }
+
+    outputLabel(value) {
+      const map = { low: "outputLow", standard: "outputStandard", high: "outputHigh" };
+      return this.i18n.t(map[value] || value);
+    }
+
+    sensorLabel(value) {
+      const map = { temperature: "sensorTemperature", depth: "sensorDepth" };
+      return this.i18n.t(map[value] || value);
+    }
+
+    lifeStageLabel(value) {
+      const map = { juvenile: "lifeJuvenile", subadult: "lifeSubadult", adult: "lifeAdult" };
+      return this.i18n.t(map[value] || value);
+    }
+
+    lengthTypeLabel(value) {
+      const map = { total: "lengthTotal", fork: "lengthFork", standard: "lengthStandard", "disc-width": "lengthDiscWidth" };
+      return this.i18n.t(map[value] || value);
+    }
+
+    formatLength(fish) {
+      return `${this.formatNumber(fish.lengthCm, 1)} cm ${this.lengthTypeLabel(fish.lengthType)}`;
+    }
+
+    formatMass(grams) {
+      if (grams >= 1000) return `${this.formatNumber(grams / 1000, grams % 1000 === 0 ? 0 : 1)} kg`;
+      return `${this.formatNumber(grams, 0)} g`;
+    }
+
+    formatNumber(value, digits = 1) {
+      return this.i18n.number(value, digits);
+    }
+
+    escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  }
+
+  const BUILD_VERSION = "3.0.0-comic-audio";
+  let matchingGame = null;
+
+  global.addEventListener("error", (event) => showStandaloneError(event.error || event.message, BUILD_VERSION));
+  global.addEventListener("unhandledrejection", (event) => showStandaloneError(event.reason, BUILD_VERSION));
+
+  document.addEventListener("DOMContentLoaded", () => {
+    try {
+      languageManager.applyStaticText();
+      matchingGame = new FishTagMatchingGame(languageManager, audioManager);
+      matchingGame.initialize();
+      matchingGame.activate();
+      bindStandaloneControls(matchingGame);
+      matchingGame.applyLanguage();
+      global.matchingGame = matchingGame;
+    } catch (error) {
+      showStandaloneError(error, BUILD_VERSION);
+    }
+  });
+
+  global.addEventListener("beforeunload", () => matchingGame?.deactivate());
+})(globalThis);
+
+
+================================================================================
+FILE: tests.html
+================================================================================
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telemetry Game Tests</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .test-shell { width: min(900px, calc(100% - 28px)); margin: 30px auto; padding: 22px; border: 2px solid var(--ink); background: var(--paper); box-shadow: 7px 8px 0 var(--shadow); }
+    .test-summary { padding: 12px; font-family: var(--font-interface); font-weight: 800; }
+    .test-summary.passed { border-left: 4px solid var(--green); background: #edf5eb; }
+    .test-summary.failed { border-left: 4px solid var(--coral); background: #fff1ed; }
+    #testResults { display: grid; gap: 7px; padding: 0; list-style: none; }
+    #testResults li { padding: 9px 11px; border: 1px solid var(--line); background: var(--white); }
+    #testResults li.passed { border-left: 4px solid var(--green); }
+    #testResults li.failed { border-left: 4px solid var(--coral); }
+    #testResults strong { font-family: var(--font-interface); }
+    #testResults pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <main class="test-shell">
+    <h1>Telemetry tests</h1>
+    <p id="testSummary" class="test-summary">Running…</p>
+    <ol id="testResults"></ol>
+    <p><a href="index.html">Open game</a></p>
+  </main>
+  <script src="game-data.js?v=3.0.0"></script>
+  <script src="compatibility.js?v=3.0.0"></script>
+  <script src="illustrations.js?v=3.0.0"></script>
+  <script src="tests.js?v=3.0.0"></script>
+</body>
+</html>
+
+
+================================================================================
+FILE: tests.js
+================================================================================
+
+"use strict";
+
+(function runTelemetryTests(global) {
+  if (typeof module !== "undefined" && module.exports && !global.GameData) {
+    require("./game-data.js");
+    require("./compatibility.js");
+    require("./illustrations.js");
+  }
+
+  const { FISH_CARDS, TAG_CATALOGUE, DIFFICULTY_SETTINGS, STUDY_REQUIREMENTS, TOO_SMALL_ID } = global.GameData;
+  const {
+    calculateTagBurdenPercent,
+    evaluateTagForFish,
+    getCorrectChoice,
+    generateFishSet,
+    createMemoryCards,
+    cardsFormScientificMatch,
+    createSeededRandom,
+    validateDataset,
+    validateLevel,
+    isMemoryBoardSolvable,
+    createMemoryState,
+    flipMemoryState,
+    resolveMemoryState
+  } = global.TelemetryLogic;
+
+  const tests = [];
+  function test(name, callback) { tests.push({ name, callback }); }
+  function assert(condition, message = "Assertion failed") { if (!condition) throw new Error(message); }
+  function equal(actual, expected, message = "Values differ") {
+    if (actual !== expected) throw new Error(`${message}: expected ${expected}, received ${actual}`);
+  }
+  function near(actual, expected, tolerance = 1e-9, message = "Values differ") {
+    if (Math.abs(actual - expected) > tolerance) throw new Error(`${message}: expected ${expected}, received ${actual}`);
+  }
+  const fish = (id) => FISH_CARDS.find((item) => item.id === id);
+  const tag = (id) => TAG_CATALOGUE.find((item) => item.id === id);
+
+  test("Tag burden is calculated correctly", () => {
+    near(calculateTagBurdenPercent({ weightGrams: 200 }, { weightInAirGrams: 3.6 }), 1.8);
+  });
+
+  test("An overweight internal tag is rejected", () => {
+    const result = evaluateTagForFish(fish("herring-rose"), tag("v6"), STUDY_REQUIREMENTS.shortPresence);
+    assert(!result.valid);
+    assert(result.reasons.includes("too-heavy"));
+  });
+
+  test("An incompatible attachment type is rejected", () => {
+    const result = evaluateTagForFish(fish("dogfish-otto"), tag("v13"), STUDY_REQUIREMENTS.externalLong);
+    assert(!result.valid);
+    assert(result.reasons.includes("wrong-attachment"));
+  });
+
+  test("Insufficient battery life is rejected", () => {
+    const result = evaluateTagForFish(fish("cod-peter"), tag("v9tp"), STUDY_REQUIREMENTS.longTemperature);
+    assert(!result.valid);
+    assert(result.reasons.includes("battery-short"));
+  });
+
+  test("A missing required sensor is rejected", () => {
+    const result = evaluateTagForFish(fish("mackerel-marta"), tag("v6"), STUDY_REQUIREMENTS.temperatureSeason);
+    assert(!result.valid);
+    assert(result.reasons.includes("missing-temperature"));
+  });
+
+  test("The smallest suitable tag is selected", () => {
+    equal(getCorrectChoice(fish("mackerel-marta"), TAG_CATALOGUE).id, "v7tp");
+  });
+
+  test("Too small to tag is returned correctly", () => {
+    equal(getCorrectChoice(fish("sprat-noor"), TAG_CATALOGUE).id, TOO_SMALL_ID);
+  });
+
+  test("Every fish record produces one defensible answer", () => {
+    equal(validateDataset(FISH_CARDS, TAG_CATALOGUE).length, 0);
+    for (const record of FISH_CARDS) assert(Boolean(getCorrectChoice(record, TAG_CATALOGUE).id));
+  });
+
+  test("Every generated Direct Match level is solvable", () => {
+    for (const [name, config] of Object.entries(DIFFICULTY_SETTINGS)) {
+      const tags = config.tagIds.map(tag);
+      for (let seed = 1; seed <= 20; seed += 1) {
+        const level = generateFishSet(config, "sorting", createSeededRandom(seed));
+        equal(level.length, config.directMatchFishCount, `${name} fish count`);
+        equal(validateLevel(level, tags).length, 0, `${name} validation`);
+      }
+    }
+  });
+
+  test("Every generated Memory board is solvable", () => {
+    for (const [name, config] of Object.entries(DIFFICULTY_SETTINGS)) {
+      const tags = config.tagIds.map(tag);
+      for (let seed = 1; seed <= 20; seed += 1) {
+        const level = generateFishSet(config, "memory", createSeededRandom(seed));
+        const board = createMemoryCards(level, tags, createSeededRandom(seed + 500));
+        equal(level.length, config.memoryPairCount, `${name} pair count`);
+        assert(isMemoryBoardSolvable(board, level, tags), `${name} seed ${seed} is unsolvable`);
+      }
+    }
+  });
+
+  test("Duplicate tag classes remain interchangeable", () => {
+    const level = [fish("mackerel-marta"), fish("plaice-raya")];
+    const tags = TAG_CATALOGUE;
+    const board = createMemoryCards(level, tags, createSeededRandom(9));
+    const fishCard = board.find((card) => card.type === "fish" && card.fishId === "mackerel-marta");
+    const duplicateTag = board.find((card) => card.type === "tag" && card.choiceId === "v7tp");
+    assert(cardsFormScientificMatch(fishCard, duplicateTag, level, tags));
+    equal(board.filter((card) => card.type === "tag" && card.choiceId === "v7tp").length, 2);
+  });
+
+  test("No more than two memory cards can be revealed", () => {
+    let state = createMemoryState();
+    state = flipMemoryState(state, "a");
+    state = flipMemoryState(state, "b");
+    const afterThird = flipMemoryState(state, "c");
+    equal(afterThird.flippedCardIds.length, 2);
+    assert(afterThird.locked);
+  });
+
+  test("Incorrect memory cards turn face down", () => {
+    const level = [fish("herring-henk"), fish("mackerel-marta")];
+    const board = createMemoryCards(level, TAG_CATALOGUE, createSeededRandom(5));
+    const first = board.find((card) => card.type === "fish" && card.fishId === "herring-henk");
+    const wrong = board.find((card) => card.type === "tag" && card.choiceId === "v7tp");
+    let state = createMemoryState();
+    state = flipMemoryState(state, first.id);
+    state = flipMemoryState(state, wrong.id);
+    state = resolveMemoryState(state, board, level, TAG_CATALOGUE);
+    equal(state.flippedCardIds.length, 0);
+    equal(state.matchedCardIds.length, 0);
+    equal(state.mismatches, 1);
+  });
+
+  test("Correct memory pairs remain matched", () => {
+    const level = [fish("herring-henk")];
+    const board = createMemoryCards(level, TAG_CATALOGUE, createSeededRandom(7));
+    const fishCard = board.find((card) => card.type === "fish");
+    const tagCard = board.find((card) => card.type === "tag");
+    let state = createMemoryState();
+    state = flipMemoryState(state, fishCard.id);
+    state = flipMemoryState(state, tagCard.id);
+    state = resolveMemoryState(state, board, level, TAG_CATALOGUE);
+    equal(state.matchedCardIds.length, 2);
+    assert(state.matchedCardIds.includes(fishCard.id));
+    assert(state.matchedCardIds.includes(tagCard.id));
+  });
+
+  test("Restart state clears transient card state", () => {
+    const state = createMemoryState();
+    equal(state.flippedCardIds.length, 0);
+    equal(state.matchedCardIds.length, 0);
+    equal(state.turns, 0);
+    equal(state.mismatches, 0);
+    assert(!state.locked);
+  });
+
+
+  test("Fish records no longer contain fun facts", () => {
+    for (const record of FISH_CARDS) assert(!Object.prototype.hasOwnProperty.call(record, "funFact"), `${record.id} still contains funFact`);
+  });
+
+  test("Every species uses embedded SVG illustration code", () => {
+    const render = global.FishIllustrations?.renderFishIllustration;
+    assert(typeof render === "function", "Illustration renderer unavailable");
+    for (const record of FISH_CARDS) {
+      const svg = render(record.visualKey);
+      assert(svg.startsWith("<svg"), `${record.id} did not render SVG`);
+      assert(svg.includes(`species-svg--${record.visualKey}`), `${record.id} used the wrong species drawing`);
+    }
+  });
+
+  test("Memory logic contains no elapsed-time state", () => {
+    const state = createMemoryState();
+    assert(!Object.prototype.hasOwnProperty.call(state, "elapsedSeconds"));
+    assert(!Object.prototype.hasOwnProperty.call(state, "timerStartedAt"));
+    assert(!Object.prototype.hasOwnProperty.call(state, "timerInterval"));
+  });
+
+  test("Difficulty produces configured fish and pair counts", () => {
+    for (const config of Object.values(DIFFICULTY_SETTINGS)) {
+      equal(generateFishSet(config, "sorting", createSeededRandom(1)).length, config.directMatchFishCount);
+      equal(generateFishSet(config, "memory", createSeededRandom(2)).length, config.memoryPairCount);
+    }
+  });
+
+  const results = tests.map(({ name, callback }) => {
+    try {
+      callback();
+      return { name, passed: true, error: "" };
+    } catch (error) {
+      return { name, passed: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  function renderResults() {
+    const container = document.getElementById("testResults");
+    const summary = document.getElementById("testSummary");
+    if (!container || !summary) return;
+    const passed = results.filter((result) => result.passed).length;
+    summary.textContent = `${passed} / ${results.length} tests passed`;
+    summary.className = passed === results.length ? "test-summary passed" : "test-summary failed";
+    container.innerHTML = results.map((result) => `
+      <li class="${result.passed ? "passed" : "failed"}">
+        <strong>${result.passed ? "✓" : "✕"} ${escapeHtml(result.name)}</strong>
+        ${result.error ? `<pre>${escapeHtml(result.error)}</pre>` : ""}
+      </li>`).join("");
+  }
+
+  function escapeHtml(value) {
+    return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  }
+
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderResults);
+    else renderResults();
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    const failed = results.filter((result) => !result.passed);
+    for (const result of results) console.log(`${result.passed ? "PASS" : "FAIL"} ${result.name}${result.error ? ` — ${result.error}` : ""}`);
+    if (failed.length) process.exitCode = 1;
+    module.exports = results;
+  }
+})(globalThis);
+
+
+================================================================================
+FILE: README.md
+================================================================================
+
+# Fish and Acoustic Tag Lab — Updated Edition
+
+A framework-free educational browser game for matching individual fish with the smallest acoustic transmitter that meets a simplified research mission and welfare constraints.
+
+## What changed in this edition
+
+- Removed every fish fun-fact field and all fun-fact rendering.
+- Added the supplied lo-fi MP3 as looping background music.
+- Kept the soundtrack user-controlled because browsers block unsolicited audio playback.
+- Removed elapsed-time tracking, timer display, time-based completion text and the untimed-mode toggle from Memory Mode.
+- Rebuilt every species illustration as detailed inline SVG code.
+- The SVG artwork is embedded directly in `illustrations.js`; no fish image files are required.
+- Preserved turn counting, mismatches and best-turn tracking because those measure Memory efficiency without time pressure.
+
+## Run in VS Code
+
+The game uses classic browser scripts and does not require a build step.
+
+1. Open this folder in VS Code.
+2. Start a local server, for example with the **Live Server** extension, or run:
+
+   ```bash
+   python3 -m http.server 8000
+   ```
+
+3. Open `http://localhost:8000/index.html`.
+4. Press **Music: off** once to start the soundtrack. This explicit click is required by normal browser autoplay policy.
+
+Opening `index.html` directly also works in many browsers, but a local server is recommended.
+
+## Automated tests
+
+Run the logic tests with Node:
+
+```bash
+node tests.js
+```
+
+Or open `tests.html` in a browser.
+
+The suite checks:
+
+- tag-burden calculation;
+- mass, anatomy, attachment, battery, output and sensor rejection;
+- smallest-valid-tag selection;
+- “Too small to tag” selection;
+- all 18 fish records;
+- Direct Match and Memory level solvability;
+- duplicate tag classes;
+- two-card locking and mismatch reset;
+- correct-pair retention;
+- clean restart state;
+- difficulty-specific fish and pair counts.
+
+## Project structure
+
+- `index.html` — accessible page shell, controls, dialogs, game containers and the soundtrack element
+- `style.css` — responsive field-notebook design and SVG illustration styling
+- `core.js` — English/German localization, MP3 soundtrack controller, lightweight audio feedback and global error handling
+- `game-data.js` — scientific source metadata, transmitter catalogue, missions, 18 fish individuals and difficulty configuration
+- `illustrations.js` — original inline SVG comic-realistic drawings with species-specific morphology
+- `compatibility.js` — burden calculation, compatibility rules, best-fit selection, seeded level generation and validation
+- `game.js` — Direct Match and untimed Memory state machines, rendering, scoring, feedback and progression
+- `assets/music/field-notes-lofi.mp3` — the user-provided soundtrack
+- `tests.js` / `tests.html` — automated validation
+
+## Illustration design
+
+The fish artwork remains code. Each SVG includes species-specific body proportions and diagnostic visual features, including:
+
+- deep silver clupeid bodies for herring and sprat;
+- sprat ventral scutes;
+- mackerel dorsal bands, two dorsal fins and finlets;
+- three dorsal and two anal fins plus a chin barbel for Atlantic cod;
+- the dark lateral line and shoulder mark of haddock;
+- right-side eyes and orange spots for European plaice;
+- the adipose fin and upper-body spots of Atlantic salmon;
+- continuous median fins for European eel;
+- separate dorsal fins for European sea bass;
+- dorsal spines and no anal fin for spiny dogfish;
+- rear-set dorsal fins and dense spots for small-spotted catshark;
+- distinct shark and ray tail/disc forms;
+- thorn rows and species-specific spotting on rays;
+- the strongly curved lateral line and projecting lower jaw of pollack.
+
+The drawings are educational comic illustrations, not diagnostic taxonomic plates.
+
+## Scientific model
+
+For internal tags, the introductory game uses:
+
+```text
+tag burden (%) = tag mass in air / fish body mass × 100
+```
+
+The default teaching threshold is 2%. The game states prominently that this is a conservative educational rule of thumb, not a universal biological law or a field protocol. Anatomy, attachment type, battery duration, sensor needs and output class are also checked.
+
+## Soundtrack rights
+
+`assets/music/field-notes-lofi.mp3` is the exact audio file supplied for this update. Confirm that you have the necessary license or permission before publishing or redistributing the game.
+
+## Important limitations
+
+- The named fish are constructed teaching individuals, not measured study animals.
+- Their sizes and masses are chosen to be plausible within species profiles and to create uniquely defensible answers under the stated simplified rules.
+- Real transmitter selection requires species- and life-stage-specific evidence, permits, ethical approval, trained personnel, study-specific range testing and manufacturer consultation.
+- The original SVG drawings are educational card illustrations, not diagnostic taxonomic plates.
+
+All source records include an access date and are available in the in-game **About the science** panel and on each fish card.
+

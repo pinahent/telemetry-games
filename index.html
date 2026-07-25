@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Three interactive acoustic telemetry learning games: receiver array design, fish path reconstruction, and fish tag matching." />
+  <meta name="theme-color" content="#e7dfce" />
+  <title>Telemetry Games</title>
+  <link rel="stylesheet" href="hub.css" />
+</head>
+<body>
+  <main class="game-stage">
+    <iframe
+      id="gameFrame"
+      class="game-frame"
+      src="games/receiver-array/index.html"
+      title="Receiver Array game"
+      allow="autoplay; fullscreen"
+    ></iframe>
+  </main>
+
+  <noscript>
+    <div class="noscript-message">JavaScript is required to switch between the games. You can still open them directly from the <code>games</code> folder.</div>
+  </noscript>
+
+  <script src="hub.js"></script>
+</body>
+</html>

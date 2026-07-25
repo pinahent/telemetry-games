@@ -1,0 +1,1422 @@
+--- index(8).html	2026-07-24 18:55:35.919938084 +0000
++++ telemetry-game-updated/index.html	2026-07-24 18:59:55.251929865 +0000
+@@ -32,9 +32,20 @@
+ 
+   <main class="page-shell">
+     <section class="game-sheet" aria-labelledby="game-heading">
+-      <div class="sheet-heading"><div><p class="section-number" data-i18n="arraySection">01 / ARRAY DESIGN</p><h2 id="game-heading" data-i18n="gameHeading">Place the receiver stations</h2></div></div>
++      <div class="sheet-heading">
++        <div><p class="section-number" data-i18n="arraySection">01 / ARRAY DESIGN</p><h2 id="game-heading" data-i18n="gameHeading">Place the receiver stations</h2></div>
++        <div class="difficulty-control" aria-labelledby="difficultyLabel">
++          <span id="difficultyLabel" class="tool-label" data-i18n="difficultyLabel">Difficulty</span>
++          <div class="difficulty-buttons" role="radiogroup" aria-label="Difficulty" data-i18n-aria-label="difficultyLabel">
++            <button class="difficulty-button" type="button" role="radio" data-difficulty="easy" aria-checked="false" data-i18n="difficultyEasy">Easy</button>
++            <button class="difficulty-button is-active" type="button" role="radio" data-difficulty="medium" aria-checked="true" data-i18n="difficultyMedium">Medium</button>
++            <button class="difficulty-button" type="button" role="radio" data-difficulty="hard" aria-checked="false" data-i18n="difficultyHard">Hard</button>
++          </div>
++        </div>
++      </div>
+       <div class="hud" aria-label="Game status" data-i18n-aria-label="gameStatusLabel">
+         <div class="hud-item"><span data-i18n="hudLevel">Level</span><strong id="levelDisplay">1 / 12</strong></div>
++        <div class="hud-item hud-difficulty"><span data-i18n="hudDifficulty">Difficulty</span><strong id="difficultyDisplay">Medium</strong></div>
+         <div class="hud-item"><span data-i18n="hudAnimals">Animals</span><strong id="animalDisplay">1 fish</strong></div>
+         <div class="hud-item"><span data-i18n="hudReceivers">Receivers left</span><strong id="receiverDisplay">7 of 7</strong></div>
+         <div class="hud-item"><span data-i18n="hudDetected">Detected</span><strong id="scoreDisplay">0.0%</strong></div>
+@@ -81,6 +92,6 @@
+   </main>
+   <footer class="site-footer" data-i18n="footerCredit">by Pina</footer>
+   <script src="https://cdn.jsdelivr.net/npm/p5@2.3.0/lib/p5.min.js"></script>
+-  <script src="sketch.js?v=1.0.0"></script>
++  <script src="sketch.js?v=1.1.0"></script>
+ </body>
+ </html>
+--- style(8).css	2026-07-24 18:55:35.631938093 +0000
++++ telemetry-game-updated/style.css	2026-07-24 18:59:55.363929861 +0000
+@@ -875,3 +875,115 @@
+   }
+ }
+ 
++
++/* ---------------------------------------
++   DIFFICULTY SELECTION
++---------------------------------------- */
++
++.difficulty-control {
++  display: flex;
++  flex: 0 0 auto;
++  gap: 9px;
++  align-items: center;
++  justify-content: flex-end;
++}
++
++.difficulty-buttons {
++  display: inline-flex;
++  border: 1px solid rgba(24, 49, 59, 0.55);
++  background: rgba(255, 253, 247, 0.72);
++  box-shadow: 2px 2px 0 rgba(24, 49, 59, 0.12);
++}
++
++.difficulty-button {
++  min-height: 36px;
++  min-width: 76px;
++  padding: 7px 12px;
++  border: 0;
++  border-right: 1px solid rgba(24, 49, 59, 0.24);
++  color: var(--ink);
++  background: transparent;
++  font-family: var(--font-interface);
++  font-size: 0.8rem;
++  font-weight: 800;
++  letter-spacing: 0.035em;
++  cursor: pointer;
++}
++
++.difficulty-button:last-child {
++  border-right: 0;
++}
++
++.difficulty-button:hover:not(:disabled) {
++  background: rgba(23, 111, 135, 0.11);
++}
++
++.difficulty-button.is-active,
++.difficulty-button[aria-checked="true"] {
++  color: var(--white);
++  background: var(--blue-dark);
++}
++
++.difficulty-button:focus-visible {
++  position: relative;
++  z-index: 2;
++  outline: 3px solid rgba(197, 154, 55, 0.48);
++  outline-offset: 2px;
++}
++
++.difficulty-button:disabled {
++  cursor: not-allowed;
++  opacity: 0.52;
++}
++
++/* Seven compact status cells plus the wider state cell. */
++.hud {
++  grid-template-columns: repeat(6, minmax(96px, 1fr)) minmax(150px, 1.35fr);
++}
++
++.hud-difficulty {
++  border-top: 3px solid var(--blue);
++}
++
++@media (max-width: 1120px) {
++  .hud {
++    grid-template-columns: repeat(4, minmax(110px, 1fr));
++  }
++}
++
++@media (max-width: 760px) {
++  .sheet-heading {
++    align-items: flex-start;
++    flex-direction: column;
++  }
++
++  .difficulty-control {
++    width: 100%;
++    align-items: stretch;
++    flex-direction: column;
++  }
++
++  .difficulty-buttons {
++    width: 100%;
++  }
++
++  .difficulty-button {
++    flex: 1 1 0;
++    min-width: 0;
++  }
++}
++
++@media (max-width: 700px) {
++  .hud {
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++  }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .button,
++  .difficulty-button,
++  .language-button,
++  .utility-button {
++    transition: none;
++  }
++}
+--- sketch(8).js	2026-07-24 18:55:35.891938085 +0000
++++ telemetry-game-updated/sketch.js	2026-07-24 19:06:03.055918207 +0000
+@@ -1,6 +1,6 @@
+ "use strict";
+ 
+-const BUILD_VERSION = "1.0.0-receiver-array";
++const BUILD_VERSION = "1.1.0-receiver-array";
+ 
+ const GAME_STATES = Object.freeze({
+   PLACING: "PLACING",
+@@ -18,8 +18,13 @@
+     "languageLabel": "Language",
+     "arraySection": "01 / ARRAY DESIGN",
+     "gameHeading": "Place the receiver stations",
++    "difficultyLabel": "Difficulty",
++    "difficultyEasy": "Easy",
++    "difficultyMedium": "Medium",
++    "difficultyHard": "Hard",
+     "gameStatusLabel": "Game status",
+     "hudLevel": "Level",
++    "hudDifficulty": "Difficulty",
+     "hudAnimals": "Animals",
+     "hudReceivers": "Receivers left",
+     "hudDetected": "Detected",
+@@ -44,7 +49,7 @@
+     "legendDetected": "detected route",
+     "legendMissed": "missed route",
+     "controlsTitle": "Controls",
+-    "controlsText": "Click to place. Drag to reposition. Right-click a receiver, or select it and press Delete, to remove it. , ",
++    "controlsText": "Click to place. Drag to reposition. Right-click a receiver, or select it and press Delete, to remove it. , ",
+     "footprintTitle": "Read the footprint",
+     "footprintText": "The pale receiver ring bends inward through algae and ship-noise areas, and stops at solid terrain. It shows the effective range used by the game, not just the open-water radius.",
+     "fieldNotesSection": "02 / FIELD NOTES",
+@@ -70,7 +75,8 @@
+     "obstacleNoise": "ship noise",
+     "obstacleOpen": "open water",
+     "levelIntro": "Level {level}: {name}. Place up to {receivers} receivers for {animals}. Conditions: {conditions}. Routes are hidden.",
+-    "gameRestarted": "Game restarted. Level 1 is ready with newly generated hidden routes.",
++    "gameRestarted": "Game restarted on {difficulty} difficulty. Level 1 is ready with newly generated hidden routes.",
++    "difficultyChanged": "{difficulty} difficulty selected. Level {level} was reset with {receivers} receivers, a {radius}-unit open-water radius, and a {target}% target.",
+     "allLevelsComplete": "All twelve field exercises are complete. A new Level 1 survey has been prepared.",
+     "simulationOne": "Simulation running. The fish turns green when a receiver logs its transmitter.",
+     "simulationMany": "Simulation running. All {count} fish contribute equally to the combined score.",
+@@ -83,9 +89,10 @@
+     "receiverRemoved": "Receiver removed. Click in open water to place another one.",
+     "fatalError": "Game build {version} stopped because of a JavaScript error:\n\n{message}",
+     "canvasPlacingLabel": "Hidden routes · click to place · drag to reposition",
+-    "canvasRunningLabel": "{count} fish moving · green route = detected · coral route = missed",
++    "canvasRunningLabel": "{count} fish moving · click a fish to move the tag ping · green = detected",
+     "canvasRetryLabel": "Use the revealed routes to revise the array, then retry",
+     "canvasCompleteLabel": "Target reached · review the effective listening footprints",
++    "celebrationCheer": "Great survey!",
+     "levelNames": {
+       "Open Lagoon": "Open Lagoon",
+       "Algae Banks": "Algae Banks",
+@@ -109,8 +116,13 @@
+     "languageLabel": "Sprache",
+     "arraySection": "01 / EMPFÄNGERNETZ",
+     "gameHeading": "Platziere die Empfängerstationen",
++    "difficultyLabel": "Schwierigkeit",
++    "difficultyEasy": "Leicht",
++    "difficultyMedium": "Mittel",
++    "difficultyHard": "Schwer",
+     "gameStatusLabel": "Spielstatus",
+     "hudLevel": "Level",
++    "hudDifficulty": "Schwierigkeit",
+     "hudAnimals": "Tiere",
+     "hudReceivers": "Empfänger übrig",
+     "hudDetected": "Erfasst",
+@@ -135,7 +147,7 @@
+     "legendDetected": "erfasste Route",
+     "legendMissed": "nicht erfasste Route",
+     "controlsTitle": "Steuerung",
+-    "controlsText": "Klicken zum Platzieren. Ziehen zum Verschieben. Mit Rechtsklick oder nach Auswahl mit Entf kann ein Empfänger entfernt werden.",
++    "controlsText": "Klicken zum Platzieren. Ziehen zum Verschieben. Mit Rechtsklick oder nach Auswahl mit Entf kann ein Empfänger entfernt werden. Während der Simulation verschiebt ein Klick auf einen Fisch den Markierungsimpuls.",
+     "footprintTitle": "Empfangsbereich lesen",
+     "footprintText": "Der helle Empfangsbereich zieht sich in Algen- und Schiffslärmgebieten zusammen und endet an festem Gelände. Er zeigt die tatsächlich verwendete Reichweite, nicht nur den Radius im offenen Wasser.",
+     "fieldNotesSection": "02 / FELDNOTIZEN",
+@@ -161,7 +173,8 @@
+     "obstacleNoise": "Schiffslärm",
+     "obstacleOpen": "offenes Wasser",
+     "levelIntro": "Level {level}: {name}. Platziere bis zu {receivers} Empfänger für {animals}. Bedingungen: {conditions}. Die Routen bleiben verborgen.",
+-    "gameRestarted": "Das Spiel wurde neu gestartet. Level 1 ist mit neu erzeugten verborgenen Routen bereit.",
++    "gameRestarted": "Das Spiel wurde auf Schwierigkeit {difficulty} neu gestartet. Level 1 ist mit neu erzeugten verborgenen Routen bereit.",
++    "difficultyChanged": "Schwierigkeit {difficulty} gewählt. Level {level} wurde mit {receivers} Empfängern, {radius} Einheiten Reichweite im offenen Wasser und einem Ziel von {target}% zurückgesetzt.",
+     "allLevelsComplete": "Alle zwölf Feldübungen sind abgeschlossen. Eine neue Studie in Level 1 wurde vorbereitet.",
+     "simulationOne": "Die Simulation läuft. Der Fisch wird grün, wenn ein Empfänger seinen Sender registriert.",
+     "simulationMany": "Die Simulation läuft. Alle {count} Fische tragen gleich stark zur Gesamtwertung bei.",
+@@ -174,9 +187,10 @@
+     "receiverRemoved": "Empfänger entfernt. Klicke ins offene Wasser, um einen neuen zu platzieren.",
+     "fatalError": "Spiel-Build {version} wurde wegen eines JavaScript-Fehlers angehalten:\n\n{message}",
+     "canvasPlacingLabel": "Verborgene Routen · klicken zum Platzieren · ziehen zum Verschieben",
+-    "canvasRunningLabel": "{count} Fische bewegen sich · grün = erfasst · korallrot = verpasst",
++    "canvasRunningLabel": "{count} Fische bewegen sich · Fisch anklicken = Markierungsimpuls · grün = erfasst",
+     "canvasRetryLabel": "Nutze die sichtbaren Routen, passe das Netz an und wiederhole",
+     "canvasCompleteLabel": "Ziel erreicht · prüfe die effektiven Empfangsbereiche",
++    "celebrationCheer": "Starke Studie!",
+     "levelNames": {
+       "Open Lagoon": "Offene Lagune",
+       "Algae Banks": "Algenbänke",
+@@ -523,11 +537,130 @@
+ }
+ 
+ 
+-const FISH_PALETTES = [
+-  { body: [244, 186, 75], stripe: [111, 68, 37] },
+-  { body: [228, 124, 93], stripe: [107, 49, 45] },
+-  { body: [128, 190, 196], stripe: [37, 82, 91] }
+-];
++const DEFAULT_DIFFICULTY = "medium";
++
++const DIFFICULTY_SETTINGS = Object.freeze({
++  easy: Object.freeze({
++    receiverCountDelta: 1,
++    receiverRadiusMultiplier: 1.12,
++    targetPercentage: 65
++  }),
++  medium: Object.freeze({
++    receiverCountDelta: 0,
++    receiverRadiusMultiplier: 1,
++    targetPercentage: 70
++  }),
++  hard: Object.freeze({
++    receiverCountDelta: -1,
++    receiverRadiusMultiplier: 0.84,
++    targetPercentage: 80
++  })
++});
++
++const FISH_SPECIES = Object.freeze({
++  lagoonGlider: Object.freeze({
++    key: "lagoonGlider",
++    visual: Object.freeze({
++      body: [244, 186, 75],
++      marking: [111, 68, 37],
++      shape: "glider"
++    }),
++    movement: Object.freeze({
++      speedMultiplier: 0.96,
++      acceleration: 72,
++      turnFrequency: 0.018,
++      maxTurnAngle: 0.34,
++      directionChangeSmoothness: 0.12,
++      pathFollowSmoothing: 0.62,
++      pauseChancePerSecond: 0,
++      pauseDuration: [0, 0],
++      burstChancePerSecond: 0,
++      burstDuration: [0, 0],
++      burstSpeedMultiplier: 1,
++      speedOscillation: 0.025,
++      speedOscillationFrequency: 1.1,
++      boundaryAvoidance: 1.25,
++      wanderRandomness: 0.48,
++      wanderingBias: 0.08,
++      loopStrength: 0.08
++    })
++  }),
++  reefDarter: Object.freeze({
++    key: "reefDarter",
++    visual: Object.freeze({
++      body: [228, 124, 93],
++      marking: [107, 49, 45],
++      shape: "darter"
++    }),
++    movement: Object.freeze({
++      speedMultiplier: 1.18,
++      acceleration: 285,
++      turnFrequency: 0.105,
++      maxTurnAngle: 1.02,
++      directionChangeSmoothness: 0.64,
++      pathFollowSmoothing: 0.84,
++      pauseChancePerSecond: 0,
++      pauseDuration: [0, 0],
++      burstChancePerSecond: 0.08,
++      burstDuration: [0.24, 0.52],
++      burstSpeedMultiplier: 1.28,
++      speedOscillation: 0.09,
++      speedOscillationFrequency: 4.4,
++      boundaryAvoidance: 1.55,
++      wanderRandomness: 1.28,
++      wanderingBias: 0.18,
++      loopStrength: 0.03
++    })
++  }),
++  loopingBream: Object.freeze({
++    key: "loopingBream",
++    visual: Object.freeze({
++      body: [128, 190, 196],
++      marking: [37, 82, 91],
++      shape: "bream"
++    }),
++    movement: Object.freeze({
++      speedMultiplier: 1.02,
++      acceleration: 148,
++      turnFrequency: 0.042,
++      maxTurnAngle: 0.78,
++      directionChangeSmoothness: 0.24,
++      pathFollowSmoothing: 0.7,
++      pauseChancePerSecond: 0.055,
++      pauseDuration: [0.45, 1.05],
++      burstChancePerSecond: 0.12,
++      burstDuration: [0.72, 1.3],
++      burstSpeedMultiplier: 1.55,
++      speedOscillation: 0.045,
++      speedOscillationFrequency: 1.8,
++      boundaryAvoidance: 0.95,
++      wanderRandomness: 0.78,
++      wanderingBias: 0.42,
++      loopStrength: 0.58
++    })
++  })
++});
++
++const FISH_SPECIES_ORDER = Object.freeze([
++  "lagoonGlider",
++  "reefDarter",
++  "loopingBream"
++]);
++
++function speciesForFish(index) {
++  return FISH_SPECIES[FISH_SPECIES_ORDER[index % FISH_SPECIES_ORDER.length]];
++}
++
++function applyDifficultyToLevel(baseConfig, difficultyKey) {
++  const settings = DIFFICULTY_SETTINGS[difficultyKey] ?? DIFFICULTY_SETTINGS[DEFAULT_DIFFICULTY];
++  return {
++    ...baseConfig,
++    difficultyKey,
++    receiverCount: Math.max(2, baseConfig.receiverCount + settings.receiverCountDelta),
++    receiverRadius: Math.round(baseConfig.receiverRadius * settings.receiverRadiusMultiplier),
++    targetPercentage: settings.targetPercentage
++  };
++}
+ 
+ /*
+   Each level is a configuration object. Obstacle instances increase by exactly
+@@ -541,7 +674,6 @@
+     fishCount: 1,
+     receiverCount: 7,
+     receiverRadius: 180,
+-    targetPercentage: 70,
+     fishSpeed: 128,
+     fishSpeedSpread: 0,
+     pathLength: 2200,
+@@ -567,7 +699,6 @@
+     fishCount: 1,
+     receiverCount: 7,
+     receiverRadius: 176,
+-    targetPercentage: 70,
+     fishSpeed: 130,
+     fishSpeedSpread: 0,
+     pathLength: 2380,
+@@ -594,7 +725,6 @@
+     fishCount: 1,
+     receiverCount: 6,
+     receiverRadius: 176,
+-    targetPercentage: 70,
+     fishSpeed: 132,
+     fishSpeedSpread: 0,
+     pathLength: 2550,
+@@ -623,7 +753,6 @@
+     fishCount: 1,
+     receiverCount: 6,
+     receiverRadius: 172,
+-    targetPercentage: 70,
+     fishSpeed: 134,
+     fishSpeedSpread: 0,
+     pathLength: 2730,
+@@ -653,7 +782,6 @@
+     fishCount: 2,
+     receiverCount: 7,
+     receiverRadius: 184,
+-    targetPercentage: 70,
+     fishSpeed: 132,
+     fishSpeedSpread: 0.08,
+     pathLength: 2460,
+@@ -684,7 +812,6 @@
+     fishCount: 2,
+     receiverCount: 7,
+     receiverRadius: 180,
+-    targetPercentage: 70,
+     fishSpeed: 135,
+     fishSpeedSpread: 0.09,
+     pathLength: 2660,
+@@ -716,7 +843,6 @@
+     fishCount: 2,
+     receiverCount: 6,
+     receiverRadius: 184,
+-    targetPercentage: 70,
+     fishSpeed: 137,
+     fishSpeedSpread: 0.10,
+     pathLength: 2840,
+@@ -749,7 +875,6 @@
+     fishCount: 2,
+     receiverCount: 6,
+     receiverRadius: 180,
+-    targetPercentage: 70,
+     fishSpeed: 140,
+     fishSpeedSpread: 0.11,
+     pathLength: 3010,
+@@ -783,7 +908,6 @@
+     fishCount: 3,
+     receiverCount: 7,
+     receiverRadius: 188,
+-    targetPercentage: 70,
+     fishSpeed: 136,
+     fishSpeedSpread: 0.10,
+     pathLength: 2720,
+@@ -819,7 +943,6 @@
+     fishCount: 3,
+     receiverCount: 7,
+     receiverRadius: 184,
+-    targetPercentage: 70,
+     fishSpeed: 139,
+     fishSpeedSpread: 0.11,
+     pathLength: 2890,
+@@ -856,7 +979,6 @@
+     fishCount: 3,
+     receiverCount: 6,
+     receiverRadius: 188,
+-    targetPercentage: 70,
+     fishSpeed: 142,
+     fishSpeedSpread: 0.12,
+     pathLength: 3060,
+@@ -894,7 +1016,6 @@
+     fishCount: 3,
+     receiverCount: 5,
+     receiverRadius: 192,
+-    targetPercentage: 70,
+     fishSpeed: 145,
+     fishSpeedSpread: 0.13,
+     pathLength: 3220,
+@@ -1048,6 +1169,177 @@
+   }
+ }
+ 
++class CelebrationEffect {
++  constructor(i18n, reducedMotion) {
++    this.i18n = i18n;
++    this.reducedMotion = Boolean(reducedMotion);
++    this.active = false;
++    this.elapsed = 0;
++    this.duration = 0;
++    this.particles = [];
++  }
++
++  setReducedMotion(reducedMotion) {
++    this.reducedMotion = Boolean(reducedMotion);
++    if (this.active && this.reducedMotion) {
++      this.duration = Math.min(this.duration, 1.8);
++    }
++  }
++
++  start(levelIndex) {
++    this.stop();
++    this.active = true;
++    this.elapsed = 0;
++    this.duration = this.reducedMotion ? 1.8 : 3.6;
++
++    const colors = [
++      [255, 222, 111],
++      [91, 224, 149],
++      [240, 124, 96],
++      [135, 217, 230],
++      [255, 247, 218]
++    ];
++    const particleCount = this.reducedMotion ? 18 : 76;
++    const seededOffset = (levelIndex + 1) * 0.173;
++
++    for (let index = 0; index < particleCount; index += 1) {
++      const colorValue = colors[index % colors.length];
++      const randomX = (Math.random() + seededOffset * index) % 1;
++      this.particles.push({
++        x: randomX * Math.max(width, 320),
++        y: this.reducedMotion
++          ? 20 + (index % 4) * 18
++          : -20 - Math.random() * Math.max(80, height * 0.36),
++        velocityX: this.reducedMotion ? 0 : -34 + Math.random() * 68,
++        velocityY: this.reducedMotion ? 0 : 92 + Math.random() * 105,
++        rotation: Math.random() * TWO_PI,
++        rotationSpeed: this.reducedMotion ? 0 : -5 + Math.random() * 10,
++        width: 5 + Math.random() * 7,
++        height: 9 + Math.random() * 9,
++        colorValue
++      });
++    }
++  }
++
++  stop() {
++    this.active = false;
++    this.elapsed = 0;
++    this.duration = 0;
++    this.particles.length = 0;
++  }
++
++  update(dtSeconds) {
++    if (!this.active) return;
++    this.elapsed += dtSeconds;
++
++    if (!this.reducedMotion) {
++      for (const particle of this.particles) {
++        particle.velocityY += 118 * dtSeconds;
++        particle.x += particle.velocityX * dtSeconds;
++        particle.y += particle.velocityY * dtSeconds;
++        particle.rotation += particle.rotationSpeed * dtSeconds;
++      }
++    }
++
++    if (this.elapsed >= this.duration) this.stop();
++  }
++
++  render() {
++    if (!this.active) return;
++
++    push();
++    for (const particle of this.particles) {
++      if (particle.y > height + 30) continue;
++      push();
++      translate(particle.x, particle.y);
++      rotate(particle.rotation);
++      noStroke();
++      fill(...particle.colorValue, 225);
++      rectMode(CENTER);
++      rect(0, 0, particle.width, particle.height, 1.5);
++      pop();
++    }
++
++    const entrance = this.reducedMotion
++      ? 1
++      : constrain(this.elapsed / 0.34, 0, 1);
++    const exit = this.reducedMotion
++      ? 1
++      : constrain((this.duration - this.elapsed) / 0.35, 0, 1);
++    const scaleAmount = Math.min(entrance, exit);
++    const bounce = this.reducedMotion ? 0 : sin(this.elapsed * 8.2) * 4.5;
++    const panelWidth = Math.min(210, width - 28);
++    const centerX = constrain(width * 0.72, panelWidth / 2 + 14, width - panelWidth / 2 - 14);
++    const centerY = 82 + bounce;
++
++    translate(centerX, centerY);
++    scale(Math.max(0.01, scaleAmount));
++
++    noStroke();
++    fill(8, 43, 52, 75);
++    rectMode(CENTER);
++    rect(4, 5, panelWidth, 112, 9);
++    fill(255, 250, 229, 242);
++    stroke(24, 49, 59, 220);
++    strokeWeight(2);
++    rect(0, 0, panelWidth, 112, 9);
++
++    this.renderCheeringFish(-panelWidth * 0.27, 9);
++
++    noStroke();
++    fill(24, 49, 59);
++    textFont("system-ui");
++    textStyle(BOLD);
++    textAlign(CENTER, CENTER);
++    textSize(16);
++    text(
++      this.i18n.t("celebrationCheer"),
++      panelWidth * 0.2,
++      -2,
++      panelWidth * 0.5,
++      70
++    );
++    pop();
++  }
++
++  renderCheeringFish(x, y) {
++    push();
++    translate(x, y);
++    const wiggle = this.reducedMotion ? 0 : sin(this.elapsed * 11) * 0.14;
++    rotate(-0.12 + wiggle);
++
++    noStroke();
++    fill(208, 145, 49);
++    triangle(-22, 0, -38, -14, -38, 14);
++
++    fill(244, 186, 75);
++    stroke(111, 68, 37);
++    strokeWeight(1.5);
++    ellipse(0, 0, 48, 27);
++
++    noStroke();
++    fill(111, 68, 37, 210);
++    rect(-7, -12, 7, 24, 3);
++    fill(255, 250, 230);
++    circle(13, -5, 7);
++    fill(24, 49, 59);
++    circle(14, -5, 3);
++
++    noFill();
++    stroke(24, 49, 59);
++    strokeWeight(1.8);
++    arc(13, 4, 10, 8, 0.1, PI - 0.1);
++
++    stroke(111, 68, 37);
++    strokeWeight(3);
++    const finLift = this.reducedMotion ? 0 : sin(this.elapsed * 13) * 4;
++    line(-3, -10, -11, -25 - finLift);
++    line(5, 11, 13, 25 + finLift);
++    pop();
++  }
++}
++
++
+ class Game {
+   constructor(levelConfigs, i18n, audio) {
+     this.levelConfigs = levelConfigs;
+@@ -1058,6 +1350,15 @@
+     this.levelIndex = 0;
+     this.level = null;
+     this.state = GAME_STATES.PLACING;
++    this.active = true;
++
++    this.difficultyKey = this.readInitialDifficulty();
++    this.reducedMotionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
++    this.prefersReducedMotion = Boolean(this.reducedMotionMedia?.matches);
++    this.reducedMotionListener = (event) => {
++      this.prefersReducedMotion = event.matches;
++      this.celebration.setReducedMotion(event.matches);
++    };
+ 
+     this.receivers = [];
+     this.selectedReceiver = null;
+@@ -1066,6 +1367,9 @@
+ 
+     this.tracks = [];
+     this.pathSeed = 0;
++    this.taggedFishIndex = 0;
++    this.tagPingElapsed = 0;
++    this.celebration = new CelebrationEffect(this.i18n, this.prefersReducedMotion);
+ 
+     this.viewScale = 1;
+     this.viewOffsetX = 0;
+@@ -1082,8 +1386,27 @@
+     this.updateAudioButton();
+   }
+ 
++  readInitialDifficulty() {
++    try {
++      const saved = window.localStorage.getItem("telemetryDifficulty");
++      if (saved && DIFFICULTY_SETTINGS[saved]) return saved;
++    } catch (error) {
++      console.warn("Difficulty preference could not be read.", error);
++    }
++    return DEFAULT_DIFFICULTY;
++  }
++
++  saveDifficulty() {
++    try {
++      window.localStorage.setItem("telemetryDifficulty", this.difficultyKey);
++    } catch (error) {
++      console.warn("Difficulty preference could not be saved.", error);
++    }
++  }
++
+   cacheDomElements() {
+     this.dom.levelDisplay = document.getElementById("levelDisplay");
++    this.dom.difficultyDisplay = document.getElementById("difficultyDisplay");
+     this.dom.animalDisplay = document.getElementById("animalDisplay");
+     this.dom.receiverDisplay = document.getElementById("receiverDisplay");
+     this.dom.scoreDisplay = document.getElementById("scoreDisplay");
+@@ -1097,6 +1420,7 @@
+     this.dom.restartGameButton = document.getElementById("restartGameButton");
+     this.dom.audioToggleButton = document.getElementById("audioToggleButton");
+     this.dom.languageButtons = Array.from(document.querySelectorAll("[data-language]"));
++    this.dom.difficultyButtons = Array.from(document.querySelectorAll("[data-difficulty]"));
+   }
+ 
+   bindControls() {
+@@ -1110,6 +1434,18 @@
+       button.addEventListener("click", () => this.changeLanguage(button.dataset.language));
+     }
+ 
++    for (const button of this.dom.difficultyButtons) {
++      button.addEventListener("click", () => this.changeDifficulty(button.dataset.difficulty));
++    }
++
++    if (this.reducedMotionMedia) {
++      if (typeof this.reducedMotionMedia.addEventListener === "function") {
++        this.reducedMotionMedia.addEventListener("change", this.reducedMotionListener);
++      } else if (typeof this.reducedMotionMedia.addListener === "function") {
++        this.reducedMotionMedia.addListener(this.reducedMotionListener);
++      }
++    }
++
+     this.dom.audioToggleButton.addEventListener("click", async () => {
+       const enabled = await this.audio.toggle();
+       if (enabled && this.state === GAME_STATES.RUNNING) this.audio.startSwimming();
+@@ -1125,6 +1461,26 @@
+     this.updateUi();
+   }
+ 
++  changeDifficulty(difficultyKey) {
++    if (!DIFFICULTY_SETTINGS[difficultyKey] || this.state === GAME_STATES.RUNNING) return;
++    if (difficultyKey === this.difficultyKey) return;
++
++    this.difficultyKey = difficultyKey;
++    this.saveDifficulty();
++    this.loadLevel(this.levelIndex);
++    this.setStatus("difficultyChanged", {
++      difficultyKey: this.difficultyKey,
++      level: this.levelIndex + 1,
++      receivers: this.level.config.receiverCount,
++      radius: this.level.config.receiverRadius,
++      target: this.level.config.targetPercentage
++    });
++  }
++
++  difficultyLabel() {
++    return this.i18n.t(`difficulty${this.difficultyKey[0].toUpperCase()}${this.difficultyKey.slice(1)}`);
++  }
++
+   setActive(active) {
+     this.active = Boolean(active);
+     if (!this.active) {
+@@ -1138,24 +1494,39 @@
+ 
+   loadLevel(index) {
+     this.audio.stopSwimming();
++    this.celebration.stop();
+     this.levelIndex = constrain(index, 0, this.levelConfigs.length - 1);
+-    this.level = new Level(this.levelConfigs[this.levelIndex]);
++    const configuredLevel = applyDifficultyToLevel(
++      this.levelConfigs[this.levelIndex],
++      this.difficultyKey
++    );
++    this.level = new Level(configuredLevel);
+     this.receivers = [];
+     this.selectedReceiver = null;
+     this.draggingReceiver = null;
+     this.pathSeed = Math.floor(random(1, 1_000_000_000));
+     this.tracks = [];
++    this.taggedFishIndex = 0;
++    this.tagPingElapsed = 0;
+ 
+     for (let fishIndex = 0; fishIndex < this.level.config.fishCount; fishIndex += 1) {
++      const species = speciesForFish(fishIndex);
+       const seed = this.pathSeed + fishIndex * 1_000_003;
+-      const path = PathGenerator.generate(this.level, seed);
+-      const speedFactor = this.speedFactorForFish(fishIndex, this.level.config.fishCount);
++      const path = PathGenerator.generate(this.level, seed, species);
++      const centered = fishIndex - (this.level.config.fishCount - 1) / 2;
++      const individualFactor = 1 + centered * this.level.config.fishSpeedSpread * 0.35;
++      const speed =
++        this.level.config.fishSpeed *
++        species.movement.speedMultiplier *
++        individualFactor;
++
+       this.tracks.push(
+         new AnimalTrack(
+           path,
+           this.level.config.pathSampleSpacing,
+           fishIndex,
+-          this.level.config.fishSpeed * speedFactor
++          speed,
++          species
+         )
+       );
+     }
+@@ -1172,19 +1543,13 @@
+     this.updateUi();
+   }
+ 
+-  speedFactorForFish(index, count) {
+-    if (count <= 1) return 1;
+-    const centered = index - (count - 1) / 2;
+-    return 1 + centered * this.level.config.fishSpeedSpread;
+-  }
+-
+   resetLevel() {
+     this.loadLevel(this.levelIndex);
+   }
+ 
+   restartGame() {
+     this.loadLevel(0);
+-    this.setStatus("gameRestarted");
++    this.setStatus("gameRestarted", { difficultyKey: this.difficultyKey });
+   }
+ 
+   nextLevel() {
+@@ -1204,10 +1569,12 @@
+   startSimulation() {
+     if (this.state === GAME_STATES.RUNNING || this.receivers.length === 0) return;
+ 
++    this.celebration.stop();
+     this.clearSimulationData();
+     this.state = GAME_STATES.RUNNING;
+     this.selectedReceiver = null;
+     this.draggingReceiver = null;
++    this.tagPingElapsed = 0;
+ 
+     for (const track of this.tracks) {
+       track.processSamplesThrough(0, (position) => this.evaluateDetection(position));
+@@ -1223,6 +1590,9 @@
+ 
+   update(dtSeconds) {
+     this.updateViewTransform();
++    this.tagPingElapsed += dtSeconds;
++    this.celebration.update(dtSeconds);
++
+     if (this.state !== GAME_STATES.RUNNING) return;
+ 
+     for (const track of this.tracks) {
+@@ -1261,6 +1631,7 @@
+         score: finalScore,
+         target: this.level.config.targetPercentage
+       });
++      this.celebration.start(this.levelIndex);
+       this.audio.playSuccess();
+     } else {
+       this.state = GAME_STATES.RESULT;
+@@ -1324,16 +1695,19 @@
+     this.level.renderBarriers();
+     this.renderReceivers();
+     this.renderActiveSignals();
++    this.renderTaggedFishPing();
+     this.renderFish();
+     this.level.renderBorder();
+ 
+     pop();
++
++    this.celebration.render();
+   }
+ 
+   renderTrails() {
+     for (const track of this.tracks) {
+       if (track.processedSamples < 2) continue;
+-      const palette = FISH_PALETTES[track.index % FISH_PALETTES.length];
++      const palette = track.species.visual;
+ 
+       strokeCap(ROUND);
+       for (let i = 1; i < track.processedSamples; i += 1) {
+@@ -1368,7 +1742,9 @@
+       if (!track.currentSignal?.detected) continue;
+       const fishPosition = track.fish.position();
+       const receiverPosition = track.currentSignal.receiver.position;
+-      const pulse = 5 + 3 * sin(frameCount * 0.18 + track.index * 1.7);
++      const pulse = this.prefersReducedMotion
++        ? 6
++        : 5 + 3 * sin(frameCount * 0.18 + track.index * 1.7);
+ 
+       push();
+       safeSetLineDash([8 / this.viewScale, 7 / this.viewScale]);
+@@ -1385,6 +1761,35 @@
+     }
+   }
+ 
++  renderTaggedFishPing() {
++    const track = this.tracks[this.taggedFishIndex];
++    if (!track) return;
++    const fishPosition = track.fish.position();
++
++    push();
++    noFill();
++    const phases = this.prefersReducedMotion
++      ? [0.42]
++      : [
++          (this.tagPingElapsed % 1.55) / 1.55,
++          ((this.tagPingElapsed + 0.78) % 1.55) / 1.55
++        ];
++
++    for (const phase of phases) {
++      const diameter = 45 + phase * 52;
++      const alpha = this.prefersReducedMotion ? 205 : 220 * (1 - phase);
++
++      stroke(8, 38, 47, alpha * 0.72);
++      strokeWeight(5.5 / this.viewScale);
++      circle(fishPosition.x, fishPosition.y, diameter);
++
++      stroke(255, 222, 111, alpha);
++      strokeWeight(2.5 / this.viewScale);
++      circle(fishPosition.x, fishPosition.y, diameter);
++    }
++    pop();
++  }
++
+   renderFish() {
+     for (const track of this.tracks) {
+       const detected =
+@@ -1460,10 +1865,17 @@
+   }
+ 
+   handlePointerDown(canvasX, canvasY) {
+-    if (!this.canEditReceivers()) return;
+     const point = this.canvasToWorld(canvasX, canvasY);
+     if (!this.isWorldPointInside(point)) return;
+ 
++    if (this.state === GAME_STATES.RUNNING) {
++      const fishIndex = this.fishAt(point);
++      if (fishIndex >= 0) this.setTaggedFish(fishIndex);
++      return;
++    }
++
++    if (!this.canEditReceivers()) return;
++
+     const receiver = this.receiverAt(point);
+     if (receiver) {
+       this.selectedReceiver = receiver;
+@@ -1519,6 +1931,21 @@
+     if (receiver) this.removeReceiver(receiver);
+   }
+ 
++  fishAt(worldPoint) {
++    for (let index = this.tracks.length - 1; index >= 0; index -= 1) {
++      if (p5.Vector.dist(this.tracks[index].fish.position(), worldPoint) <= 30) {
++        return index;
++      }
++    }
++    return -1;
++  }
++
++  setTaggedFish(index) {
++    if (index < 0 || index >= this.tracks.length || index === this.taggedFishIndex) return;
++    this.taggedFishIndex = index;
++    this.tagPingElapsed = 0;
++  }
++
+   receiverAt(worldPoint) {
+     for (let index = this.receivers.length - 1; index >= 0; index -= 1) {
+       if (this.receivers[index].containsPoint(worldPoint)) return this.receivers[index];
+@@ -1558,6 +1985,7 @@
+     const fishCount = this.level.config.fishCount;
+ 
+     this.dom.levelDisplay.textContent = `${this.levelIndex + 1} / ${this.levelConfigs.length}`;
++    this.dom.difficultyDisplay.textContent = this.difficultyLabel();
+     this.dom.animalDisplay.textContent = this.i18n.fishCount(fishCount);
+     this.dom.receiverDisplay.textContent = this.i18n.t("receiversRemaining", {
+       remaining: receiversRemaining,
+@@ -1574,6 +2002,14 @@
+     this.dom.retryButton.disabled = this.receivers.length === 0;
+     this.dom.resetButton.disabled = false;
+     this.dom.restartGameButton.disabled = false;
++
++    for (const button of this.dom.difficultyButtons) {
++      const active = button.dataset.difficulty === this.difficultyKey;
++      button.classList.toggle("is-active", active);
++      button.setAttribute("aria-checked", String(active));
++      button.disabled = this.state === GAME_STATES.RUNNING;
++    }
++
+     this.updateAudioButton();
+   }
+ 
+@@ -1615,6 +2051,12 @@
+     const parameters = { ...this.statusParams };
+ 
+     if (parameters.levelName) parameters.name = this.i18n.levelName(parameters.levelName);
++    if (parameters.difficultyKey) {
++      const key = String(parameters.difficultyKey);
++      parameters.difficulty = this.i18n.t(
++        `difficulty${key[0].toUpperCase()}${key.slice(1)}`
++      );
++    }
+     if (Number.isFinite(parameters.fishCount)) parameters.animals = this.i18n.taggedFish(parameters.fishCount);
+     if (Array.isArray(parameters.obstacleKeys)) {
+       parameters.conditions = parameters.obstacleKeys.map((key) => this.i18n.t(key)).join(", ");
+@@ -1625,12 +2067,14 @@
+   }
+ }
+ 
++
+ class AnimalTrack {
+-  constructor(path, sampleSpacing, index, speed) {
++  constructor(path, sampleSpacing, index, speed, species) {
+     this.path = path;
+     this.index = index;
+     this.speed = speed;
+-    this.fish = new Fish(path, sampleSpacing, index);
++    this.species = species;
++    this.fish = new Fish(path, sampleSpacing, index, species);
+     this.sampleResults = new Array(path.length).fill(null);
+     this.processedSamples = 0;
+     this.detectedSamples = 0;
+@@ -1814,25 +2258,93 @@
+ }
+ 
+ class Fish {
+-  constructor(path, sampleSpacing, index) {
++  constructor(path, sampleSpacing, index, species) {
+     this.path = path;
+     this.sampleSpacing = sampleSpacing;
+     this.index = index;
++    this.species = species;
+     this.distanceTravelled = 0;
+     this.totalDistance = Math.max(0, (path.length - 1) * sampleSpacing);
++    this.currentSpeed = 0;
++    this.motionClock = 0;
++    this.pauseRemaining = 0;
++    this.burstRemaining = 0;
++    this.behaviorCheckRemaining = 0;
++    this.initialRandomState = (
++      ((index + 1) * 2_654_435_761) ^
++      (path.length * 1_597_334_677)
++    ) >>> 0;
++    this.randomState = this.initialRandomState;
+   }
+ 
+   reset() {
+     this.distanceTravelled = 0;
++    this.currentSpeed = 0;
++    this.motionClock = 0;
++    this.pauseRemaining = 0;
++    this.burstRemaining = 0;
++    this.behaviorCheckRemaining = 0;
++    this.randomState = this.initialRandomState;
++  }
++
++  nextRandom() {
++    this.randomState = (Math.imul(1_664_525, this.randomState) + 1_013_904_223) >>> 0;
++    return this.randomState / 4_294_967_296;
+   }
+ 
+-  advance(dtSeconds, speed) {
++  randomRange(range) {
++    return range[0] + (range[1] - range[0]) * this.nextRandom();
++  }
++
++  advance(dtSeconds, baseSpeed) {
++    const movement = this.species.movement;
++    this.motionClock += dtSeconds;
++    this.behaviorCheckRemaining -= dtSeconds;
++
++    if (this.pauseRemaining > 0) {
++      this.pauseRemaining = Math.max(0, this.pauseRemaining - dtSeconds);
++    } else {
++      this.burstRemaining = Math.max(0, this.burstRemaining - dtSeconds);
++
++      if (this.behaviorCheckRemaining <= 0) {
++        const checkInterval = 0.18;
++        this.behaviorCheckRemaining += checkInterval;
++        const pauseChance = movement.pauseChancePerSecond * checkInterval;
++        const burstChance = movement.burstChancePerSecond * checkInterval;
++        const roll = this.nextRandom();
++
++        if (roll < pauseChance) {
++          this.pauseRemaining = this.randomRange(movement.pauseDuration);
++          this.burstRemaining = 0;
++        } else if (roll < pauseChance + burstChance && this.burstRemaining <= 0) {
++          this.burstRemaining = this.randomRange(movement.burstDuration);
++        }
++      }
++    }
++
++    const oscillation =
++      1 +
++      sin(this.motionClock * movement.speedOscillationFrequency + this.index * 1.7) *
++        movement.speedOscillation;
++    const burstMultiplier = this.burstRemaining > 0
++      ? movement.burstSpeedMultiplier
++      : 1;
++    const targetSpeed = this.pauseRemaining > 0
++      ? 0
++      : baseSpeed * oscillation * burstMultiplier;
++    const maximumChange = movement.acceleration * dtSeconds;
++    this.currentSpeed = this.moveToward(this.currentSpeed, targetSpeed, maximumChange);
+     this.distanceTravelled = Math.min(
+       this.totalDistance,
+-      this.distanceTravelled + speed * dtSeconds
++      this.distanceTravelled + this.currentSpeed * dtSeconds
+     );
+   }
+ 
++  moveToward(value, target, maximumChange) {
++    if (Math.abs(target - value) <= maximumChange) return target;
++    return value + Math.sign(target - value) * maximumChange;
++  }
++
+   completedSampleIndex() {
+     return Math.min(
+       this.path.length - 1,
+@@ -1860,14 +2372,28 @@
+     return p5.Vector.sub(this.path[index + 1], this.path[index]).heading();
+   }
+ 
++  stateColors(detected, neutral) {
++    const base = this.species.visual.body;
++    if (neutral) {
++      return {
++        body: base,
++        outline: [245, 241, 219]
++      };
++    }
++
++    const target = detected ? [77, 224, 143] : [222, 104, 82];
++    const blendAmount = detected ? 0.58 : 0.34;
++    return {
++      body: base.map((component, index) =>
++        Math.round(component + (target[index] - component) * blendAmount)
++      ),
++      outline: detected ? [112, 255, 178] : [255, 178, 155]
++    };
++  }
++
+   render({ detected, neutral, viewScale, fishIndex }) {
+     const position = this.position();
+-    const palette = FISH_PALETTES[fishIndex % FISH_PALETTES.length];
+-    const bodyRgb = neutral
+-      ? palette.body
+-      : detected
+-        ? [77, 224, 143]
+-        : [222, 104, 82];
++    const colors = this.stateColors(detected, neutral);
+ 
+     push();
+     translate(position.x, position.y);
+@@ -1875,47 +2401,120 @@
+ 
+     noStroke();
+     fill(3, 43, 52, 65);
+-    ellipse(3, 7, 43, 17);
++    ellipse(3, 7, 45, 18);
++
++    switch (this.species.visual.shape) {
++      case "darter":
++        this.renderDarter(colors, viewScale);
++        break;
++      case "bream":
++        this.renderBream(colors, viewScale);
++        break;
++      default:
++        this.renderGlider(colors, viewScale);
++        break;
++    }
++
++    this.renderTag(viewScale);
++    this.renderNumberBadge(fishIndex, viewScale);
++    pop();
++  }
+ 
+-    fill(bodyRgb[0] * 0.77, bodyRgb[1] * 0.77, bodyRgb[2] * 0.77);
+-    triangle(-18, 0, -34, -12, -34, 12);
++  renderGlider(colors, viewScale) {
++    const marking = this.species.visual.marking;
++    noStroke();
++    fill(colors.body[0] * 0.77, colors.body[1] * 0.77, colors.body[2] * 0.77);
++    triangle(-18, 0, -35, -13, -35, 13);
++    triangle(-4, -8, -14, -20, 7, -10);
+ 
+-    stroke(245, 241, 219, 215);
++    stroke(...colors.outline, 225);
+     strokeWeight(1.4 / viewScale);
+-    fill(bodyRgb[0], bodyRgb[1], bodyRgb[2]);
+-    ellipse(0, 0, 43, 23);
++    fill(...colors.body);
++    ellipse(0, 0, 44, 24);
++
++    noStroke();
++    fill(...marking, 195);
++    rect(-9, -10, 7, 20, 3);
++    this.renderEye(12, -4);
++  }
++
++  renderDarter(colors, viewScale) {
++    const marking = this.species.visual.marking;
++    noStroke();
++    fill(colors.body[0] * 0.72, colors.body[1] * 0.72, colors.body[2] * 0.72);
++    triangle(-20, -1, -37, -14, -31, 0);
++    triangle(-20, 1, -37, 14, -31, 0);
++    triangle(1, -6, -7, -16, 11, -7);
++
++    stroke(...colors.outline, 230);
++    strokeWeight(1.35 / viewScale);
++    fill(...colors.body);
++    ellipse(0, 0, 50, 17);
++    triangle(21, -5, 30, 0, 21, 5);
++
++    noStroke();
++    fill(...marking, 205);
++    circle(-9, -2, 5);
++    circle(0, 3, 4);
++    circle(9, -2, 4.5);
++    this.renderEye(16, -3);
++  }
+ 
++  renderBream(colors, viewScale) {
++    const marking = this.species.visual.marking;
+     noStroke();
+-    fill(palette.stripe[0], palette.stripe[1], palette.stripe[2], 190);
+-    rect(-8, -10, 7, 20, 3);
++    fill(colors.body[0] * 0.75, colors.body[1] * 0.75, colors.body[2] * 0.75);
++    ellipse(-22, 0, 20, 24);
++    triangle(-5, -10, -15, -24, 9, -12);
++    triangle(-1, 11, -12, 25, 12, 12);
++
++    stroke(...colors.outline, 230);
++    strokeWeight(1.5 / viewScale);
++    fill(...colors.body);
++    ellipse(0, 0, 39, 31);
+ 
++    noFill();
++    stroke(...marking, 210);
++    strokeWeight(3 / viewScale);
++    arc(-2, 0, 21, 20, -1.2, 1.25);
++    noStroke();
++    fill(...marking, 180);
++    circle(-9, 7, 4.5);
++    this.renderEye(11, -6);
++  }
++
++  renderEye(x, y) {
++    noStroke();
+     fill(249, 247, 231);
+-    circle(12, -4, 6);
++    circle(x, y, 6.5);
+     fill(22, 36, 39);
+-    circle(13, -4, 2.8);
++    circle(x + 1, y, 2.8);
++  }
+ 
+-    // Tag body and antenna mark.
++  renderTag(viewScale) {
+     fill(31, 42, 44);
++    noStroke();
+     rect(-3, -4, 14, 8, 2);
+     stroke(244, 241, 220);
+     strokeWeight(1 / viewScale);
+     line(1, -2, 7, -2);
++    line(9, 0, 15, -6);
++  }
+ 
+-    // A number keeps individuals identifiable when several fish are moving.
++  renderNumberBadge(fishIndex, viewScale) {
+     rotate(-this.heading());
+     noStroke();
+     fill(249, 247, 231, 235);
+-    circle(0, -22, 16);
++    circle(0, -24, 17);
+     fill(24, 49, 59);
+     textAlign(CENTER, CENTER);
+     textStyle(BOLD);
+     textSize(10 / Math.max(0.75, viewScale));
+-    text(String(fishIndex + 1), 0, -22);
+-
+-    pop();
++    text(String(fishIndex + 1), 0, -24);
+   }
+ }
+ 
++
+ class Receiver {
+   constructor(x, y, baseRadius, label) {
+     this.position = createVector(x, y);
+@@ -2199,8 +2798,9 @@
+ }
+ 
+ class PathGenerator {
+-  static generate(level, seed) {
++  static generate(level, seed, species = speciesForFish(0)) {
+     const config = level.config;
++    const movement = species.movement;
+     const desiredSampleCount = Math.max(
+       2,
+       Math.ceil(config.pathLength / config.pathSampleSpacing) + 1
+@@ -2215,26 +2815,52 @@
+       const start = this.randomValidStart(level);
+       const path = [start];
+       let heading = random(TWO_PI);
++      let targetHeading = heading;
+       let failedSteps = 0;
+ 
+       for (let sampleIndex = 1; sampleIndex < desiredSampleCount; sampleIndex += 1) {
+         const current = path[path.length - 1];
+-        let preferredHeading = heading;
++
++        if (random() < movement.turnFrequency) {
++          const directedBias =
++            sin(sampleIndex * 0.031 + attemptSeed * 0.00021) *
++            movement.wanderingBias;
++          targetHeading =
++            heading +
++            random(-movement.maxTurnAngle, movement.maxTurnAngle) +
++            directedBias;
++        }
+ 
+         const turnNoise =
+-          (noise(attempt * 5.31 + sampleIndex * config.turnNoiseScale) - 0.5) * 2;
+-        preferredHeading += turnNoise * config.pathIrregularity * 0.32;
+-        preferredHeading +=
+-          sin(sampleIndex * 0.047 + attemptSeed * 0.0001) *
++          (noise(
++            attempt * 5.31 +
++            sampleIndex * config.turnNoiseScale * movement.wanderRandomness
++          ) - 0.5) * 2;
++        const noiseTurn =
++          turnNoise *
+           config.pathIrregularity *
+-          0.055;
++          movement.wanderRandomness *
++          0.24;
++        const loopTurn =
++          sin(sampleIndex * 0.036 + attemptSeed * 0.00013) *
++          config.pathIrregularity *
++          movement.loopStrength *
++          0.16;
++
++        let preferredHeading = lerpAngle(
++          heading,
++          targetHeading,
++          movement.directionChangeSmoothness
++        );
++        preferredHeading += noiseTurn + loopTurn;
+ 
+         preferredHeading = this.applyBoundarySteering(
+           preferredHeading,
+           current,
+           config.waterWidth,
+           config.waterHeight,
+-          config.fishClearance
++          config.fishClearance,
++          movement.boundaryAvoidance
+         );
+ 
+         const candidate = this.findValidNextPoint(
+@@ -2246,10 +2872,15 @@
+ 
+         if (candidate) {
+           path.push(candidate.point);
+-          heading = lerpAngle(heading, candidate.heading, 0.72);
++          heading = lerpAngle(
++            heading,
++            candidate.heading,
++            movement.pathFollowSmoothing
++          );
+           failedSteps = 0;
+         } else {
+           heading += PI * 0.76 + random(-0.55, 0.55);
++          targetHeading = heading;
+           failedSteps += 1;
+           if (failedSteps > 30) break;
+         }
+@@ -2292,8 +2923,15 @@
+     throw new Error("No valid fish starting position exists for this level.");
+   }
+ 
+-  static applyBoundarySteering(heading, point, worldWidth, worldHeight, clearance) {
+-    const boundaryBand = Math.max(75, clearance * 4.5);
++  static applyBoundarySteering(
++    heading,
++    point,
++    worldWidth,
++    worldHeight,
++    clearance,
++    avoidanceStrength = 1
++  ) {
++    const boundaryBand = Math.max(75, clearance * 4.5) * avoidanceStrength;
+     let steerX = 0;
+     let steerY = 0;
+ 
+@@ -2308,7 +2946,11 @@
+ 
+     if (Math.abs(steerX) + Math.abs(steerY) > 0.001) {
+       const inwardHeading = atan2(steerY, steerX);
+-      const strength = constrain(Math.hypot(steerX, steerY) * 0.5, 0.15, 0.72);
++      const strength = constrain(
++        Math.hypot(steerX, steerY) * 0.5 * avoidanceStrength,
++        0.12,
++        0.82
++      );
+       return lerpAngle(heading, inwardHeading, strength);
+     }
+ 
+@@ -2337,6 +2979,7 @@
+   }
+ }
+ 
++
+ function pointInRectangle(point, rectangle, padding = 0) {
+   return (
+     point.x >= rectangle.x - padding &&
