@@ -1,3 +1,0 @@
-Telemetry Games
-Build: 20260725-direct2
-Navigation: direct pages, no iframe, no loading overlay
